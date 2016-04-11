@@ -62,11 +62,14 @@ public class TablePanel extends JPanel {
         m_table = new JTable(createTableFromData());
         m_scrollPane = new JScrollPane(m_table);
         m_table.setFillsViewportHeight(true);
-        //m_table.setDefaultRenderer(Object.class, new MyRenderer());
-        //TableColumnModel m = m_table.getColumnModel();
-        //m.getColumn(1).setCellRenderer(new MyRenderer());
-        //m_table.getColumnModel().getColumn(1).setCellRenderer(new MyRenderer());
-        m_table.setAutoCreateRowSorter(true);
+
+        // Make columns sortable
+        TableRowSorter<TableModel> rowSorter = new TableRowSorter(m_table.getModel());
+        rowSorter.setComparator(0, new CustomComparator());
+        rowSorter.setComparator(1, new CustomComparator());
+        rowSorter.setComparator(2, new CustomComparator());
+        m_table.setRowSorter(rowSorter);
+
     }
 
     /**
@@ -74,7 +77,6 @@ public class TablePanel extends JPanel {
      */
     private void setPreferences() {
         m_table.getColumnModel().getColumn(1).setCellRenderer(new PriceRenderer());
-
     }
 
     /**
@@ -116,20 +118,24 @@ public class TablePanel extends JPanel {
         return tableModel;
     }
 
-    /**
-     * Converts a double to a string in this format: 5.937 -> € 5,94.
-     *
-     * @param price the double to convert
-     * @return the converted string
-     */
-    private String priceToString(double price) {
-        String result = String.format("%10.2f", (price));
-        result = result.trim();
-        return "€ " + result.replace('.', ',');
-    }
-
     // Public functions --------------------------------------------------------
     // Private classes ---------------------------------------------------------
+    /**
+     * Compare two objects as numbers if they are numeric values. Otherwise,
+     * compare their string-representation.
+     */
+    private static class CustomComparator implements Comparator {
+
+        @Override
+        public int compare(Object a, Object b) {
+            if (a.getClass().equals(Double.class)) {
+                return ((Double) a).compareTo((Double) b);
+            } else {
+                return a.toString().compareTo(b.toString());
+            }
+        }
+    }
+
     private static class PriceRenderer extends DefaultTableCellRenderer {
 
         public PriceRenderer() {
@@ -138,151 +144,15 @@ public class TablePanel extends JPanel {
 
         @Override
         public void setValue(Object value) {
-            System.out.println("Type: " + value.getClass() + " " + value);
-            //String result = String.format("%10.2f", value);
-            //result = result.trim();
-            //value = "€  " + result.replace('.', ',');
-
+            String result = String.format("%10.2f", value);
+            result = result.trim();
+            value = "€  " + result.replace('.', ',');
             super.setValue(value);
         }
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            //System.out.println("Object type: " + value.getClass());
             return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
-    }
-
-    public static class Test extends TableRowSorter {
-
-    }
-
-    /**
-     * Use a formatter to format the cell Object
-     *
-     * Source: tips4java.wordpress.com/2008/10/11/table-format-renderers/
-     */
-    private static class FormatRenderer extends DefaultTableCellRenderer {
-
-        private final Format formatter;
-
-        /**
-         * Use the specified formatter to format the Object
-         *
-         * @param formatter
-         */
-        public FormatRenderer(Format formatter) {
-            this.formatter = formatter;
-        }
-
-        @Override
-        public void setValue(Object value) {
-            //  Format the Object before setting its value in the renderer
-            try {
-                if (value != null) {
-                    value = formatter.format(value);
-                }
-            } catch (IllegalArgumentException e) {
-            }
-            super.setValue(value);
-        }
-
-        /**
-         * Use the default date/time formatter for the default locale
-         *
-         * @return
-         */
-        public static FormatRenderer getDateTimeRenderer() {
-            return new FormatRenderer(DateFormat.getDateTimeInstance());
-        }
-
-        /**
-         * Use the default time formatter for the default locale
-         *
-         * @return
-         */
-        public static FormatRenderer getTimeRenderer() {
-            return new FormatRenderer(DateFormat.getTimeInstance());
-        }
-    }
-
-    /**
-     * Source: tips4java.wordpress.com/2008/10/11/table-format-renderers/
-     */
-    private static class NumberRenderer extends FormatRenderer {
-
-        /**
-         * Use the specified number formatter and right align the text
-         *
-         * @param formatter
-         */
-        public NumberRenderer(NumberFormat formatter) {
-            super(formatter);
-            setHorizontalAlignment(SwingConstants.RIGHT);
-        }
-
-        /**
-         * Use the default currency formatter for the default locale
-         *
-         * @return
-         */
-        public static NumberRenderer getCurrencyRenderer() {
-            return new NumberRenderer(NumberFormat.getCurrencyInstance());
-        }
-
-        /**
-         * Use the default integer formatter for the default locale
-         *
-         * @return
-         */
-        public static NumberRenderer getIntegerRenderer() {
-            return new NumberRenderer(NumberFormat.getIntegerInstance());
-        }
-
-        /**
-         * Use the default percent formatter for the default locale
-         *
-         * @return
-         */
-        public static NumberRenderer getPercentRenderer() {
-            return new NumberRenderer(NumberFormat.getPercentInstance());
-        }
-    }
-
-    private static class Price implements Comparable {
-
-        private final double m_price;
-        private String m_priceString;
-
-        public Price(double price) {
-            m_price = price;
-            createPriceString();
-        }
-
-        public double getDouble() {
-            return m_price;
-        }
-
-        public String getString() {
-            return m_priceString;
-        }
-
-        private void createPriceString() {
-            m_priceString = String.format("%10.2f", (m_price));
-            m_priceString = m_priceString.trim();
-            m_priceString = "€ " + m_priceString.replace('.', ',');
-        }
-
-        @Override
-        public int compareTo(Object t) {
-            System.out.println("Comparing!");
-            return ((Double) m_price).compareTo((Double) t);
-        }
-
-        @Override
-        public String toString() {
-            return m_priceString;
-        }
-
     }
 }
