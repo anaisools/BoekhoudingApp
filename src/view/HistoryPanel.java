@@ -39,10 +39,7 @@ public class HistoryPanel extends JPanel implements Observer {
      */
     private void createComponents() {
         // TEMPORARY: create detectable panels
-        m_tablePanel = new TablePanel(Data.GetInstance().getTransactions().toList()); //new JPanel();
-        m_tablePanel.setBackground(Color.yellow);
-        //m_tablePanel.setMinimumSize(new Dimension(600,400));
-        //m_tablePanel.setPreferredSize(m_tablePanel.getMinimumSize());
+        m_tablePanel = new TablePanel(Data.GetInstance().getTransactions().toList(), true, true, true, true, true, true, true);
 
         m_yearPanel = new JPanel();
         m_yearPanel.setBackground(Color.cyan);
@@ -113,7 +110,7 @@ public class HistoryPanel extends JPanel implements Observer {
     private void setYear(int year) {
         m_year = year;
         m_yearLabel.setText(Integer.toString(m_year));
-        
+
         // TODO: update table and overview
     }
 

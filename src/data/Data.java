@@ -52,8 +52,8 @@ public class Data extends Observable implements Observer {
         t0.setPrice(-30);
         t0.setTransactor("Een winkel", "Winkel");
         t0.setCategory("Cadeau");
-        t0.setDateAdded(new Date(2016, 1, 21));
-        t0.setDatePaid(new Date(2016, 1, 22));
+        t0.setDateAdded(new Date(2016 - 1900, 1, 21));
+        t0.setDatePaid(new Date(2016 - 1900, 1, 22));
         t0.setPaymentMethod("Bankkaart", "Bank");
         m_transactions.add(t0);
 
@@ -62,8 +62,8 @@ public class Data extends Observable implements Observer {
         t1.setPrice(15.92419);
         t1.setTransactor("Mama", "Personen");
         t1.setCategory("Zakgeld");
-        t1.setDateAdded(new Date(2016, 1, 19));
-        t1.setDatePaid(new Date(2016, 1, 19));
+        t1.setDateAdded(new Date(2016 - 1900, 1, 19));
+        t1.setDatePaid(new Date(2016 - 1900, 1, 19));
         t1.setPaymentMethod("Overschrijving", "Bank");
         m_transactions.add(t1);
 
@@ -72,8 +72,8 @@ public class Data extends Observable implements Observer {
         t2.setPrice(-124.5);
         t2.setTransactor("Iemand", "Personen");
         t2.setCategory("Overig");
-        t2.setDateAdded(new Date(2016, 1, 20));
-        t2.setDatePaid(new Date(2016, 1, 20));
+        t2.setDateAdded(new Date(2016 - 1900, 1, 20));
+        t2.setDatePaid(new Date(2016 - 1900, 1, 20));
         t2.setPaymentMethod("Overschrijving", "Bank");
         m_transactions.add(t2);
         // END TEMPORARY

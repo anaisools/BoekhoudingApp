@@ -26,11 +26,9 @@ public class TablePanel extends JPanel {
     private boolean m_colPrice;
     private boolean m_colCategory;
     private boolean m_colTransactor;
-    private boolean m_colTransactorCategory;
     private boolean m_colDateAdded;
     private boolean m_colDatePaid;
     private boolean m_colPaymentMethod;
-    private boolean m_colPaymentMethodCategory;
 
     // Members & constructor ---------------------------------------------------
     public TablePanel(ArrayList<Transaction> data) {
@@ -41,12 +39,26 @@ public class TablePanel extends JPanel {
         m_colPrice = true;
         m_colCategory = true;
         m_colTransactor = false;
-        m_colTransactorCategory = false;
         m_colDateAdded = false;
         m_colDatePaid = false;
         m_colPaymentMethod = false;
-        m_colPaymentMethodCategory = false;
         // END TEMPORARY
+
+        createComponents();
+        setPreferences();
+        setActions();
+        createUI();
+    }
+
+    public TablePanel(ArrayList<Transaction> data, boolean description, boolean price, boolean category, boolean transactor, boolean dateAdded, boolean datePaid, boolean paymentMethod) {
+        m_data = data;
+        m_colDescription = description;
+        m_colPrice = price;
+        m_colCategory = category;
+        m_colTransactor = transactor;
+        m_colDateAdded = dateAdded;
+        m_colDatePaid = datePaid;
+        m_colPaymentMethod = paymentMethod;
 
         createComponents();
         setPreferences();
@@ -65,18 +77,22 @@ public class TablePanel extends JPanel {
 
         // Make columns sortable
         TableRowSorter<TableModel> rowSorter = new TableRowSorter(m_table.getModel());
-        rowSorter.setComparator(0, new CustomComparator());
-        rowSorter.setComparator(1, new CustomComparator());
-        rowSorter.setComparator(2, new CustomComparator());
+        for (int i = 0; i < m_table.getModel().getColumnCount(); i++) {
+            rowSorter.setComparator(i, new CustomComparator());
+        }
         m_table.setRowSorter(rowSorter);
-
     }
 
     /**
      * Set layout-related preferences for the frame.
      */
     private void setPreferences() {
-        m_table.getColumnModel().getColumn(1).setCellRenderer(new PriceRenderer());
+        if (m_colPrice) {
+            m_table.getColumnModel().getColumn(getColumnIndex("Price")).setCellRenderer(new PriceRenderer());
+        }
+        if (m_colDateAdded) {
+            m_table.getColumnModel().getColumn(getColumnIndex("Date added")).setCellRenderer(new DateRenderer());
+        }
     }
 
     /**
@@ -99,23 +115,65 @@ public class TablePanel extends JPanel {
     }
 
     private TableModel createTableFromData() {
-        // TEMPORARY: hard coded columns
-        String[] columns = {"Description", "Price", "Category"};
-        // END TEMPORARY
-
-        DefaultTableModel tableModel = new DefaultTableModel(columns, 0);
+        ArrayList<String> columns = new ArrayList();
+        if (m_colDescription) {
+            columns.add("Description");
+        }
+        if (m_colPrice) {
+            columns.add("Price");
+        }
+        if (m_colCategory) {
+            columns.add("Category");
+        }
+        if (m_colTransactor) {
+            columns.add("Transactor");
+        }
+        if (m_colDateAdded) {
+            columns.add("Date added");
+        }
+        if (m_colDatePaid) {
+            columns.add("Date paid");
+        }
+        if (m_colPaymentMethod) {
+            columns.add("Payment method");
+        }
+        DefaultTableModel tableModel = new DefaultTableModel(columns.toArray(new String[0]), 0);
 
         for (Transaction t : m_data) {
-            ArrayList<Object> a = new ArrayList();
-            a.add(t.getDescription());
-            //a.add(new Price(t.getPrice()));
-            a.add(t.getPrice());
-            a.add(t.getCategory());
-
-            tableModel.addRow(a.toArray());
+            ArrayList<Object> dataObject = new ArrayList();
+            if (m_colDescription) {
+                dataObject.add(t.getDescription());
+            }
+            if (m_colPrice) {
+                dataObject.add(t.getPrice());
+            }
+            if (m_colCategory) {
+                dataObject.add(t.getCategory());
+            }
+            if (m_colTransactor) {
+                dataObject.add(t.getTransactor());
+            }
+            if (m_colDateAdded) {
+                dataObject.add(t.getDateAdded());
+            }
+            if (m_colDatePaid) {
+                dataObject.add(t.getDatePaid());
+            }
+            if (m_colPaymentMethod) {
+                dataObject.add(t.getPaymentMethod());
+            }
+            tableModel.addRow(dataObject.toArray());
         }
-
         return tableModel;
+    }
+
+    private int getColumnIndex(String header) {
+        for (int i = 0; i < m_table.getColumnCount(); i++) {
+            if (m_table.getColumnName(i).equals(header)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     // Public functions --------------------------------------------------------
@@ -130,6 +188,8 @@ public class TablePanel extends JPanel {
         public int compare(Object a, Object b) {
             if (a.getClass().equals(Double.class)) {
                 return ((Double) a).compareTo((Double) b);
+            } else if (a.getClass().equals(Date.class)) {
+                return ((Date) a).compareTo((Date) b);
             } else {
                 return a.toString().compareTo(b.toString());
             }
@@ -147,6 +207,29 @@ public class TablePanel extends JPanel {
             String result = String.format("%10.2f", value);
             result = result.trim();
             value = "€  " + result.replace('.', ',');
+            super.setValue(value);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        }
+    }
+
+    private static class DateRenderer extends DefaultTableCellRenderer {
+
+        DateFormat df;
+
+        public DateRenderer() {
+            setHorizontalAlignment(SwingConstants.RIGHT);
+            df = new SimpleDateFormat("dd/MM/yyyy");
+        }
+
+        @Override
+        public void setValue(Object value) {
+            if (value.getClass().equals(Date.class)) {
+                value = df.format((Date) value);
+            }
             super.setValue(value);
         }
 
