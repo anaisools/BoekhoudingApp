@@ -3,6 +3,7 @@ package view;
 import data.Data;
 import java.awt.*;
 import java.util.*;
+import javafx.util.Pair;
 import javax.swing.*;
 
 /**
@@ -39,7 +40,14 @@ public class HistoryPanel extends JPanel implements Observer {
      */
     private void createComponents() {
         // TEMPORARY: create detectable panels
-        m_tablePanel = new TablePanel(Data.GetInstance().getTransactions().toList(), true, true, true, true, true, true, true);
+        ArrayList<Pair<String, TablePanel.COLUMNTYPE>> columns = new ArrayList();
+        columns.add(new Pair("Description", TablePanel.COLUMNTYPE.DESCRIPTION));
+        columns.add(new Pair("Price", TablePanel.COLUMNTYPE.PRICE));
+        columns.add(new Pair("Category", TablePanel.COLUMNTYPE.CATEGORY));
+        columns.add(new Pair("Transactor", TablePanel.COLUMNTYPE.TRANSACTOR));
+        columns.add(new Pair("Date", TablePanel.COLUMNTYPE.DATEPAID));
+        columns.add(new Pair("Payment method", TablePanel.COLUMNTYPE.PAYMENTMETHOD));
+        m_tablePanel = new TablePanel(Data.GetInstance().getTransactions().toList(), columns);
 
         m_yearPanel = new JPanel();
         m_yearPanel.setBackground(Color.cyan);
