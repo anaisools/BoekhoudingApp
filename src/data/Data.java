@@ -1,5 +1,7 @@
 package data;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import model.Transaction;
 
@@ -46,39 +48,47 @@ public class Data extends Observable implements Observer {
     public boolean loadData() {
         // TODO: load from file using XMLFileReader class
 
-        // TEMPORARY: hardcoded objects created
-        Transaction t0 = new Transaction(0);
-        t0.setDescription("Cadeautje voor Audric");
-        t0.setPrice(-30);
-        t0.setTransactor("Een winkel", "Winkel");
-        t0.setCategory("Cadeau");
-        t0.setDateAdded(new Date(2016 - 1900, 1, 21));
-        t0.setDatePaid(new Date(2016 - 1900, 1, 22));
-        t0.setPaymentMethod("Bankkaart", "Bank");
-        m_transactions.add(t0);
+        try {
+            // TEMPORARY: hardcoded objects created
+            SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
 
-        Transaction t1 = new Transaction(1);
-        t1.setDescription("Zakgeld");
-        t1.setPrice(15.92419);
-        t1.setTransactor("Mama", "Personen");
-        t1.setCategory("Zakgeld");
-        t1.setDateAdded(new Date(2016 - 1900, 1, 19));
-        t1.setDatePaid(new Date(2016 - 1900, 1, 19));
-        t1.setPaymentMethod("Overschrijving", "Bank");
-        m_transactions.add(t1);
+            Transaction t0 = new Transaction(0);
+            t0.setDescription("Cadeautje voor Audric");
+            t0.setPrice(-30);
+            t0.setTransactor("Een winkel", "Winkel");
+            t0.setCategory("Cadeau");
+            t0.setDateAdded(df.parse("21/01/2016"));
+            t0.setDatePaid(df.parse("22/01/2016"));
+            t0.setPaymentMethod("Bankkaart", "Bank");
+            m_transactions.add(t0);
 
-        Transaction t2 = new Transaction(1);
-        t2.setDescription("Iets heel duur");
-        t2.setPrice(-124.5);
-        t2.setTransactor("Iemand", "Personen");
-        t2.setCategory("Overig");
-        t2.setDateAdded(new Date(2016 - 1900, 1, 20));
-        t2.setDatePaid(new Date(2016 - 1900, 1, 20));
-        t2.setPaymentMethod("Overschrijving", "Bank");
-        m_transactions.add(t2);
-        // END TEMPORARY
+            Transaction t1 = new Transaction(1);
+            t1.setDescription("Zakgeld");
+            t1.setPrice(15.92419);
+            t1.setTransactor("Mama", "Personen");
+            t1.setCategory("Zakgeld");
+            t1.setDateAdded(df.parse("19/01/2016"));
+            t1.setDatePaid(df.parse("19/01/2016"));
+            t1.setPaymentMethod("Overschrijving", "Bank");
+            m_transactions.add(t1);
 
-        return true;
+            Transaction t2 = new Transaction(1);
+            t2.setDescription("Iets heel duur");
+            t2.setPrice(-124.5);
+            t2.setTransactor("Iemand", "Personen");
+            t2.setCategory("Overig");
+            t2.setDateAdded(df.parse("20/01/2016"));
+            t2.setDatePaid(df.parse("20/01/2016"));
+            t2.setPaymentMethod("Overschrijving", "Bank");
+            m_transactions.add(t2);
+            // END TEMPORARY
+
+            return true;
+        } catch (ParseException ex) {
+            System.out.println("Parsing of date failed");
+            System.out.println(ex.getMessage());
+            return false;
+        }
     }
 
     public QueryableList getTransactions() {
