@@ -39,7 +39,6 @@ public class HistoryPanel extends JPanel implements Observer {
      * Initialize all members.
      */
     private void createComponents() {
-        // TEMPORARY: create detectable panels
         ArrayList<Pair<String, TablePanel.COLUMNTYPE>> columns = new ArrayList();
         columns.add(new Pair("Description", TablePanel.COLUMNTYPE.DESCRIPTION));
         columns.add(new Pair("Price", TablePanel.COLUMNTYPE.PRICE));
@@ -49,6 +48,7 @@ public class HistoryPanel extends JPanel implements Observer {
         columns.add(new Pair("Payment method", TablePanel.COLUMNTYPE.PAYMENTMETHOD));
         m_tablePanel = new TablePanel(Data.GetInstance().getTransactions().toList(), columns);
 
+        // TEMPORARY: create detectable panels
         m_yearPanel = new JPanel();
         m_yearPanel.setBackground(Color.cyan);
 

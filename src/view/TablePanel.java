@@ -65,6 +65,9 @@ public class TablePanel extends JPanel {
         m_table.setDefaultRenderer(Object.class, new PaddingRenderer());
         for (Pair<String, COLUMNTYPE> p : m_columns) {
             switch (p.getValue()) {
+                case DESCRIPTION:
+                    getColumn(p.getKey()).setPreferredWidth(250);
+                    break;
                 case PRICE:
                     getColumn(p.getKey()).setCellRenderer(new PriceRenderer());
                     break;
@@ -181,7 +184,6 @@ public class TablePanel extends JPanel {
     private static class PaddingRenderer extends DefaultTableCellRenderer {
 
         public PaddingRenderer() {
-            // padding
         }
 
         @Override
@@ -196,7 +198,6 @@ public class TablePanel extends JPanel {
 
         public PriceRenderer() {
             setHorizontalAlignment(SwingConstants.RIGHT);
-            setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
         }
 
         @Override
@@ -218,8 +219,8 @@ public class TablePanel extends JPanel {
         DateFormat df;
 
         public DateRenderer() {
-            setHorizontalAlignment(SwingConstants.CENTER);
-            df = new SimpleDateFormat("dd/MM/yyyy");
+            setHorizontalAlignment(SwingConstants.RIGHT);
+            df = new SimpleDateFormat("EEEE, dd/MM/yyyy");
         }
 
         @Override
