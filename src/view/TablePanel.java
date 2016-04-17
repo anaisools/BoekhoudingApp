@@ -19,7 +19,7 @@ import model.Transaction;
  */
 public class TablePanel extends JPanel {
 
-    private final ArrayList<Transaction> m_data;
+    private ArrayList<Transaction> m_data;
     private final ArrayList<Pair<String, COLUMNTYPE>> m_columns;
 
     private JTable m_table;
@@ -31,6 +31,16 @@ public class TablePanel extends JPanel {
     };
 
     // Members & constructor ---------------------------------------------------
+    public TablePanel(ArrayList<Pair<String, COLUMNTYPE>> columns) {
+        m_data = new ArrayList();
+        m_columns = columns;
+
+        createComponents();
+        setPreferences();
+        setActions();
+        createUI();
+    }
+
     public TablePanel(ArrayList<Transaction> data, ArrayList<Pair<String, COLUMNTYPE>> columns) {
         m_data = data;
         m_columns = columns;
@@ -105,7 +115,7 @@ public class TablePanel extends JPanel {
      *
      * @return a tablemodel filled with data
      */
-    private TableModel createTableFromData() {
+    private DefaultTableModel createTableFromData() {
         // Create headers
         String[] columnNames = new String[m_columns.size()];
         for (int i = 0; i < m_columns.size(); i++) {
@@ -114,6 +124,17 @@ public class TablePanel extends JPanel {
         DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0);
 
         // Create data
+        insertData(tableModel);
+
+        return tableModel;
+    }
+
+    /**
+     * Inserts the data from the m_data member into the given TableModel.
+     *
+     * @param tm
+     */
+    private void insertData(DefaultTableModel tm) {
         for (Transaction t : m_data) {
             ArrayList<Object> dataObject = new ArrayList();
             for (Pair<String, COLUMNTYPE> p : m_columns) {
@@ -141,9 +162,8 @@ public class TablePanel extends JPanel {
                         break;
                 }
             }
-            tableModel.addRow(dataObject.toArray());
+            tm.addRow(dataObject.toArray());
         }
-        return tableModel;
     }
 
     /**
@@ -161,7 +181,23 @@ public class TablePanel extends JPanel {
         return null;
     }
 
+    /**
+     * Update the table to the m_data member, in case this has changed.
+     */
+    private void updateData() {
+        DefaultTableModel tm = (DefaultTableModel) m_table.getModel();
+        for (int i = tm.getRowCount() - 1; i >= 0; i--) {
+            tm.removeRow(i);
+        }
+        insertData(tm);
+    }
+
     // Public functions --------------------------------------------------------
+    public void setData(ArrayList<Transaction> data) {
+        m_data = data;
+        updateData();
+    }
+
     // Private classes ---------------------------------------------------------
     /**
      * Compare two objects as numbers if they are numeric values. Otherwise,

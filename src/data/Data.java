@@ -77,8 +77,8 @@ public class Data extends Observable implements Observer {
             t2.setPrice(-124.5);
             t2.setTransactor("Iemand", "Personen");
             t2.setCategory("Overig");
-            t2.setDateAdded(df.parse("20/01/2016"));
-            t2.setDatePaid(df.parse("20/01/2016"));
+            t2.setDateAdded(df.parse("20/01/2015"));
+            t2.setDatePaid(df.parse("20/01/2015"));
             t2.setPaymentMethod("Overschrijving", "Bank");
             m_transactions.add(t2);
             // END TEMPORARY

@@ -1,7 +1,10 @@
 package view;
 
 import data.Data;
+import data.QueryableList;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.*;
 import javafx.util.Pair;
 import javax.swing.*;
@@ -18,20 +21,29 @@ import javax.swing.*;
 public class HistoryPanel extends JPanel implements Observer {
 
     // Members & constructor ---------------------------------------------------
-    private JPanel m_tablePanel;
+    private TablePanel m_tablePanel;
     private JPanel m_yearPanel;
     private JPanel m_buttonPanel;
     private JPanel m_topPanel;
     private JLabel m_yearLabel;
     private int m_year;
+    private QueryableList m_displayedData;
+
+    private JButton m_previousYearButton;
+    private JButton m_nextYearButton;
 
     public HistoryPanel() {
+        // make sure view changes when data changes
         Data.GetInstance().addAsObserver(this);
 
         createComponents();
         setPreferences();
         setActions();
         createUI();
+
+        // subset data to current year
+        Calendar cal = Calendar.getInstance();
+        this.setYear(cal.get(Calendar.YEAR));
     }
 
     // Private functions -------------------------------------------------------
@@ -46,7 +58,7 @@ public class HistoryPanel extends JPanel implements Observer {
         columns.add(new Pair("Transactor", TablePanel.COLUMNTYPE.TRANSACTOR));
         columns.add(new Pair("Date", TablePanel.COLUMNTYPE.DATEPAID));
         columns.add(new Pair("Payment method", TablePanel.COLUMNTYPE.PAYMENTMETHOD));
-        m_tablePanel = new TablePanel(Data.GetInstance().getTransactions().toList(), columns);
+        m_tablePanel = new TablePanel(columns);
 
         // TEMPORARY: create detectable panels
         m_yearPanel = new JPanel();
@@ -59,8 +71,8 @@ public class HistoryPanel extends JPanel implements Observer {
         // TEMPORARY: year hardcoded
         m_yearLabel = new JLabel();
         m_topPanel = new JPanel();
-        m_topPanel.setBackground(Color.pink);
-        setYear(Calendar.getInstance().get(Calendar.YEAR));
+        m_previousYearButton = new JButton("<");
+        m_nextYearButton = new JButton(">");
         // END TEMPORARY
     }
 
@@ -68,21 +80,49 @@ public class HistoryPanel extends JPanel implements Observer {
      * Set layout-related preferences for the frame.
      */
     private void setPreferences() {
+        m_yearLabel.setFont(new Font("Serif", Font.PLAIN, 36));
+        m_previousYearButton.setBackground(Color.darkGray);
+        m_nextYearButton.setBackground(Color.darkGray);
     }
 
     /**
      * Set actions for members of the frame.
      */
     private void setActions() {
-
+        final HistoryPanel parent = this;
+        m_previousYearButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                parent.setYear(m_year - 1);
+            }
+        });
+        m_nextYearButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                parent.setYear(m_year + 1);
+            }
+        });
     }
 
     /**
      * Add members to the frame, using layout managers.
      */
     private void createUI() {
-        this.setLayout(new GridBagLayout());
+        // set topPanel UI
+        m_topPanel.setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = 0;
+        c.insets = new Insets(0, 20, 0, 20);
+        m_topPanel.add(m_previousYearButton, c);
+        c.gridx = 1;
+        m_topPanel.add(m_yearLabel, c);
+        c.gridx = 2;
+        m_topPanel.add(m_nextYearButton, c);
+
+        // set general UI
+        this.setLayout(new GridBagLayout());
+        c = new GridBagConstraints();
 
         c.fill = GridBagConstraints.BOTH;
         c.gridx = 0;
@@ -90,7 +130,6 @@ public class HistoryPanel extends JPanel implements Observer {
         c.gridwidth = 2;
         c.weightx = 1.0;
         c.weighty = 0.1;
-        m_topPanel.add(m_yearLabel);
         this.add(m_topPanel, c);
 
         c.gridx = 0;
@@ -115,11 +154,20 @@ public class HistoryPanel extends JPanel implements Observer {
         this.add(m_buttonPanel, c);
     }
 
+    /**
+     * Change the year of the displayed data. This changes the data in the table
+     * and the overview panel.
+     *
+     * @param year
+     */
     private void setYear(int year) {
         m_year = year;
         m_yearLabel.setText(Integer.toString(m_year));
 
-        // TODO: update table and overview
+        m_displayedData = Data.GetInstance().getTransactions().selectDatePaidByYear(m_year);
+        m_tablePanel.setData(m_displayedData.toList());
+
+        // TODO: update overview
     }
 
     // Public functions --------------------------------------------------------

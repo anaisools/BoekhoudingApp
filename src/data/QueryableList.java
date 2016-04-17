@@ -40,6 +40,7 @@ public class QueryableList extends Observable implements Iterable<Transaction> {
 
     public void add(Transaction t) {
         m_list.add(t);
+        notifyObserversOfChange();
     }
 
     public Transaction get(int index) {
@@ -69,4 +70,16 @@ public class QueryableList extends Observable implements Iterable<Transaction> {
         return m_list;
     }
 
+    // Query functions ---------------------------------------------------------
+    public QueryableList selectDatePaidByYear(int year) {
+        QueryableList q = new QueryableList();
+        Calendar cal = Calendar.getInstance();
+        for (Transaction t : this) {
+            cal.setTime(t.getDatePaid());
+            if (cal.get(Calendar.YEAR) == year) {
+                q.add(t);
+            }
+        }
+        return q;
+    }
 }
