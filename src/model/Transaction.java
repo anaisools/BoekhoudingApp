@@ -31,6 +31,11 @@ public class Transaction {
         m_id = id;
     }
 
+    @Override
+    public String toString() {
+        return m_description + ", € " + m_price + ", by " + m_transactor;
+    }
+
     // Getters -----------------------------------------------------------------
     public long getID() {
         return m_id;

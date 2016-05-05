@@ -4,10 +4,12 @@ import data.Data;
 import data.QueryableList;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import javafx.util.Pair;
 import javax.swing.*;
+import model.Transaction;
 
 /**
  * This panel fills one of the tabs of the MainWindow. It contains a table with
@@ -32,6 +34,9 @@ public class HistoryPanel extends JPanel implements Observer {
     private JButton m_previousYearButton;
     private JButton m_nextYearButton;
 
+    private JButton m_addButton;
+    private JButton m_editButton;
+
     public HistoryPanel() {
         // make sure view changes when data changes
         Data.GetInstance().addAsObserver(this);
@@ -51,6 +56,7 @@ public class HistoryPanel extends JPanel implements Observer {
      * Initialize all members.
      */
     private void createComponents() {
+        // table panel
         ArrayList<Pair<String, TablePanel.COLUMNTYPE>> columns = new ArrayList();
         columns.add(new Pair("Description", TablePanel.COLUMNTYPE.DESCRIPTION));
         columns.add(new Pair("Price", TablePanel.COLUMNTYPE.PRICE));
@@ -60,20 +66,26 @@ public class HistoryPanel extends JPanel implements Observer {
         columns.add(new Pair("Payment method", TablePanel.COLUMNTYPE.PAYMENTMETHOD));
         m_tablePanel = new TablePanel(columns);
 
+        // top panel
+        m_topPanel = new JPanel();
+        m_yearLabel = new JLabel();
+        m_previousYearButton = new JButton("<");
+        m_nextYearButton = new JButton(">");
+
+        // year panel
         // TEMPORARY: create detectable panels
         m_yearPanel = new JPanel();
         m_yearPanel.setBackground(Color.cyan);
+        // END TEMPORARY
 
+        // button panel
+        // TEMPORARY: create detectable panels
         m_buttonPanel = new JPanel();
-        m_buttonPanel.setBackground(Color.red);
+        //m_buttonPanel.setBackground(Color.red);
         // END TEMPORARY
 
-        // TEMPORARY: year hardcoded
-        m_yearLabel = new JLabel();
-        m_topPanel = new JPanel();
-        m_previousYearButton = new JButton("<");
-        m_nextYearButton = new JButton(">");
-        // END TEMPORARY
+        m_addButton = new JButton("Add");
+        m_editButton = new JButton("Edit");
     }
 
     /**
@@ -83,24 +95,41 @@ public class HistoryPanel extends JPanel implements Observer {
         m_yearLabel.setFont(new Font("Serif", Font.PLAIN, 36));
         m_previousYearButton.setBackground(Color.darkGray);
         m_nextYearButton.setBackground(Color.darkGray);
+        m_addButton.setBackground(Color.darkGray);
+        m_editButton.setBackground(Color.darkGray);
     }
 
     /**
      * Set actions for members of the frame.
      */
     private void setActions() {
-        final HistoryPanel parent = this;
-        m_previousYearButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                parent.setYear(m_year - 1);
-            }
+        m_previousYearButton.addActionListener((ActionEvent ae) -> {
+            this.setYear(m_year - 1);
         });
-        m_nextYearButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                parent.setYear(m_year + 1);
+        m_nextYearButton.addActionListener((ActionEvent ae) -> {
+            this.setYear(m_year + 1);
+        });
+        m_addButton.addActionListener((ActionEvent ae) -> {
+            System.out.println("Add button clicked.");
+
+            SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+            Transaction t1 = new Transaction(1);
+            t1.setDescription("Toegevoegde data");
+            t1.setPrice(-20);
+            t1.setTransactor("Java", "Winkel");
+            t1.setCategory("Test");
+            try {
+                t1.setDateAdded(df.parse("5/5/2016"));
+                t1.setDatePaid(df.parse("5/5/2016"));
+            } catch (ParseException ex) {
+                System.out.println("Couldn't parse date");
             }
+            t1.setPaymentMethod("Bankkaart", "Bank");
+
+            Data.GetInstance().getTransactions().add(t1);
+        });
+        m_editButton.addActionListener((ActionEvent ae) -> {
+            System.out.println("Edit button clicked. Need to implement.");
         });
     }
 
@@ -119,6 +148,16 @@ public class HistoryPanel extends JPanel implements Observer {
         m_topPanel.add(m_yearLabel, c);
         c.gridx = 2;
         m_topPanel.add(m_nextYearButton, c);
+
+        // set buttonPanel UI
+        m_buttonPanel.setLayout(new GridBagLayout());
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = 0;
+        c.insets = new Insets(20, 40, 20, 40);
+        m_buttonPanel.add(m_addButton, c);
+        c.gridx = 1;
+        m_buttonPanel.add(m_editButton, c);
 
         // set general UI
         this.setLayout(new GridBagLayout());
@@ -150,7 +189,7 @@ public class HistoryPanel extends JPanel implements Observer {
         c.gridy = 2;
         c.gridwidth = 2;
         c.weightx = 1.0;
-        c.weighty = 0.2;
+        c.weighty = 0.1;
         this.add(m_buttonPanel, c);
     }
 
@@ -164,10 +203,7 @@ public class HistoryPanel extends JPanel implements Observer {
         m_year = year;
         m_yearLabel.setText(Integer.toString(m_year));
 
-        m_displayedData = Data.GetInstance().getTransactions().selectDatePaidByYear(m_year);
-        m_tablePanel.setData(m_displayedData.toList());
-
-        // TODO: update overview
+        update(null, null);
     }
 
     // Public functions --------------------------------------------------------
@@ -179,7 +215,10 @@ public class HistoryPanel extends JPanel implements Observer {
      */
     @Override
     public void update(Observable o, Object o1) {
-        // TODO: update the table
-        // TODO: update the year-widget
+        // Update the table
+        m_displayedData = Data.GetInstance().getTransactions().selectDatePaidByYear(m_year);
+        m_tablePanel.setData(m_displayedData.toList());
+
+        // TODO: Update the year-widget
     }
 }

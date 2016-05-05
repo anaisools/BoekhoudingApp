@@ -121,7 +121,12 @@ public class TablePanel extends JPanel {
         for (int i = 0; i < m_columns.size(); i++) {
             columnNames[i] = m_columns.get(i).getKey();
         }
-        DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0);
+        DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // make cells uneditable
+            }
+        };
 
         // Create data
         insertData(tableModel);
