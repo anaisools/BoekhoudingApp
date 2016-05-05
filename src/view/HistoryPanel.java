@@ -2,6 +2,7 @@ package view;
 
 import data.Data;
 import data.QueryableList;
+import dialogs.AddEditTransaction;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.text.ParseException;
@@ -23,6 +24,8 @@ import model.Transaction;
 public class HistoryPanel extends JPanel implements Observer {
 
     // Members & constructor ---------------------------------------------------
+    private final JFrame m_parentFrame; // needed for opening dialogs that block the frame
+
     private TablePanel m_tablePanel;
     private JPanel m_yearPanel;
     private JPanel m_buttonPanel;
@@ -37,7 +40,9 @@ public class HistoryPanel extends JPanel implements Observer {
     private JButton m_addButton;
     private JButton m_editButton;
 
-    public HistoryPanel() {
+    public HistoryPanel(JFrame parentFrame) {
+        m_parentFrame = parentFrame;
+
         // make sure view changes when data changes
         Data.GetInstance().addAsObserver(this);
 
@@ -110,26 +115,36 @@ public class HistoryPanel extends JPanel implements Observer {
             this.setYear(m_year + 1);
         });
         m_addButton.addActionListener((ActionEvent ae) -> {
-            System.out.println("Add button clicked.");
-
-            SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
-            Transaction t1 = new Transaction(1);
-            t1.setDescription("Toegevoegde data");
-            t1.setPrice(-20);
-            t1.setTransactor("Java", "Winkel");
-            t1.setCategory("Test");
-            try {
-                t1.setDateAdded(df.parse("5/5/2016"));
-                t1.setDatePaid(df.parse("5/5/2016"));
-            } catch (ParseException ex) {
-                System.out.println("Couldn't parse date");
+            AddEditTransaction dialog = new AddEditTransaction(m_parentFrame);
+            dialog.show();
+            if (dialog.isApproved()) {
+                System.out.println("Dialog was approved.");
+                if (dialog.getTransaction() != null) {
+                    System.out.println(dialog.getTransaction());
+                    // Data.GetInstance().getTransactions().add(dialog.getTransaction());
+                } else {
+                    System.out.println("Transaction is null.");
+                }
+            } else {
+                System.out.println("Dialog was not approved.");
             }
-            t1.setPaymentMethod("Bankkaart", "Bank");
-
-            Data.GetInstance().getTransactions().add(t1);
         });
         m_editButton.addActionListener((ActionEvent ae) -> {
-            System.out.println("Edit button clicked. Need to implement.");
+            Transaction t = m_tablePanel.getSelectedTransaction();
+            if (t != null) {
+                AddEditTransaction dialog = new AddEditTransaction(m_parentFrame, t);
+                dialog.show();
+                if (dialog.isApproved()) {
+                    System.out.println("Dialog was approved.");
+                    if (dialog.getTransaction() != null) {
+                        System.out.println(dialog.getTransaction());
+                    } else {
+                        System.out.println("Transaction is null.");
+                    }
+                } else {
+                    System.out.println("Dialog was not approved.");
+                }
+            }
         });
     }
 

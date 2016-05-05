@@ -50,7 +50,7 @@ public class MainWindow extends JFrame {
         m_tabs.setTabPlacement(JTabbedPane.LEFT);
 
         // Create content panels for the tabs
-        m_historyPanel = new HistoryPanel();
+        m_historyPanel = new HistoryPanel(this);
         m_statsPanel = new StatsPanel();
         m_loansPanel = new LoansPanel();
 

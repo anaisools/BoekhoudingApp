@@ -1,5 +1,6 @@
 package view;
 
+import data.Data;
 import java.awt.*;
 import java.text.*;
 import java.util.*;
@@ -57,6 +58,8 @@ public class TablePanel extends JPanel {
      */
     private void createComponents() {
         m_table = new JTable(createTableFromData());
+        m_table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        m_table.removeColumn(m_table.getColumn("ID")); // hide ID column
         m_scrollPane = new JScrollPane(m_table);
         m_table.setFillsViewportHeight(true);
 
@@ -117,9 +120,10 @@ public class TablePanel extends JPanel {
      */
     private DefaultTableModel createTableFromData() {
         // Create headers
-        String[] columnNames = new String[m_columns.size()];
+        String[] columnNames = new String[m_columns.size() + 1];
+        columnNames[0] = "ID";
         for (int i = 0; i < m_columns.size(); i++) {
-            columnNames[i] = m_columns.get(i).getKey();
+            columnNames[i + 1] = m_columns.get(i).getKey();
         }
         DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
@@ -142,6 +146,7 @@ public class TablePanel extends JPanel {
     private void insertData(DefaultTableModel tm) {
         for (Transaction t : m_data) {
             ArrayList<Object> dataObject = new ArrayList();
+            dataObject.add(t.getID());
             for (Pair<String, COLUMNTYPE> p : m_columns) {
                 switch (p.getValue()) {
                     case DESCRIPTION:
@@ -201,6 +206,22 @@ public class TablePanel extends JPanel {
     public void setData(ArrayList<Transaction> data) {
         m_data = data;
         updateData();
+    }
+
+    /**
+     * Return the transaction of a selected row. Return null if no row is
+     * selected.
+     *
+     * @return
+     */
+    public Transaction getSelectedTransaction() {
+        int selectedRow = m_table.getSelectedRow();
+        if (selectedRow == -1) {
+            return null;
+        }
+        int selectedModelRow = m_table.convertRowIndexToModel(selectedRow);
+        long id = (long) m_table.getModel().getValueAt(selectedModelRow, 0);
+        return Data.GetInstance().getTransactions().get(id);
     }
 
     // Private classes ---------------------------------------------------------
