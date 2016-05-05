@@ -1,13 +1,15 @@
 package model;
 
 import java.util.Date;
+import java.util.Observable;
+import java.util.Observer;
 
 /**
  * Class that represents a transaction in the application.
  *
  * @author Anaïs Ools
  */
-public class Transaction {
+public class Transaction extends Observable {
 
     // required
     private final long m_id;
@@ -31,9 +33,29 @@ public class Transaction {
         m_id = id;
     }
 
+    // Private functions -------------------------------------------------------
     @Override
     public String toString() {
         return m_description + ", € " + m_price + ", by " + m_transactor;
+    }
+
+    /**
+     * Tell observers that the data has changed.
+     */
+    private void notifyObserversOfChange() {
+        this.setChanged();
+        this.notifyObservers();
+    }
+
+    // Public functions --------------------------------------------------------
+    /**
+     * Add an object to the list of observers to be notified when something in
+     * the data changes.
+     *
+     * @param o
+     */
+    public void addAsObserver(Observer o) {
+        this.addObserver(o);
     }
 
     // Getters -----------------------------------------------------------------
@@ -96,44 +118,54 @@ public class Transaction {
     // Setters -----------------------------------------------------------------
     public void setDescription(String description) {
         m_description = description;
+        notifyObserversOfChange();
     }
 
     public void setPrice(double price) {
         m_price = price;
+        notifyObserversOfChange();
     }
 
     public void setCategory(String category) {
         m_category = category;
+        notifyObserversOfChange();
     }
 
     public void setTransactor(String transactor, String transactorCategory) {
         m_transactor = transactor;
         m_transactorCategory = transactorCategory;
+        notifyObserversOfChange();
     }
 
     public void setDateAdded(Date dateAdded) {
         m_dateAdded = dateAdded;
+        notifyObserversOfChange();
     }
 
     public void setDatePaid(Date datePaid) {
         m_datePaid = datePaid;
+        notifyObserversOfChange();
     }
 
     public void setPaymentMethod(String paymentMethod, String paymentMethodCategory) {
         m_paymentMethod = paymentMethod;
         m_paymentMethodCategory = paymentMethodCategory;
+        notifyObserversOfChange();
     }
 
     public void setNeedsToBePaidBack(boolean needsToBePaidBack) {
         m_needsToBePaidBack = needsToBePaidBack;
+        notifyObserversOfChange();
     }
 
     public void setDatePaidBack(Date datePaidBack) {
         m_datePaidBack = datePaidBack;
+        notifyObserversOfChange();
     }
 
     public void setPaidBackTransactor(String paidBackTransactor, String paidBackTransactorCategory) {
         m_paidBackTransactor = paidBackTransactor;
         m_paidBackTransactorCategory = paidBackTransactorCategory;
+        notifyObserversOfChange();
     }
 }

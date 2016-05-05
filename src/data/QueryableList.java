@@ -9,7 +9,7 @@ import model.Transaction;
  *
  * @author Anaïs Ools
  */
-public class QueryableList extends Observable implements Iterable<Transaction> {
+public class QueryableList extends Observable implements Observer, Iterable<Transaction> {
 
     // Members -----------------------------------------------------------------
     private final ArrayList<Transaction> m_list;
@@ -40,6 +40,7 @@ public class QueryableList extends Observable implements Iterable<Transaction> {
 
     public void add(Transaction t) {
         m_list.add(t);
+        t.addAsObserver(this);
         notifyObserversOfChange();
     }
 
@@ -68,6 +69,17 @@ public class QueryableList extends Observable implements Iterable<Transaction> {
      */
     public ArrayList<Transaction> toList() {
         return m_list;
+    }
+
+    /**
+     * This function is executed when a transaction in the list changes its data.
+     *
+     * @param o
+     * @param o1
+     */
+    @Override
+    public void update(Observable o, Object o1) {
+        notifyObserversOfChange();
     }
 
     // Query functions ---------------------------------------------------------
