@@ -21,15 +21,17 @@ public class MainWindow extends JFrame {
     private JPanel m_statsPanel;
     private JPanel m_loansPanel;
 
+    private JMenuBar m_menuBar;
+
     public MainWindow() {
-        
+
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
             System.out.println("Something went wrong");
             System.out.println(ex.getMessage());
         }
-        
+
         this.setTitle("Boekhouding applicatie");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         createComponents();
@@ -76,6 +78,10 @@ public class MainWindow extends JFrame {
         m_tabs.setTabComponentAt(0, m_historyTab);
         m_tabs.setTabComponentAt(1, m_statsTab);
         m_tabs.setTabComponentAt(2, m_loansTab);
+
+        // Create menu bar
+        m_menuBar = new JMenuBar();
+        m_menuBar.add(new JMenu("Temp menu"));
     }
 
     /**
@@ -109,6 +115,7 @@ public class MainWindow extends JFrame {
      */
     private void createUI() {
         this.getContentPane().add(m_tabs);
+        this.setJMenuBar(m_menuBar);
     }
 
     /**
