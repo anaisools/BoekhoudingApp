@@ -57,6 +57,23 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
         return null;
     }
 
+    /**
+     * Get an ID that has not been assigned to any transaction.
+     *
+     * @return new ID
+     */
+    public long getNewID() {
+        long id = -1;
+        // find current max id
+        for (Transaction t : this) {
+            if (t.getID() > id) {
+                id = t.getID();
+            }
+        }
+        // increment
+        return ++id;
+    }
+
     @Override
     public Iterator<Transaction> iterator() {
         return m_list.iterator();
@@ -72,7 +89,8 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
     }
 
     /**
-     * This function is executed when a transaction in the list changes its data.
+     * This function is executed when a transaction in the list changes its
+     * data.
      *
      * @param o
      * @param o1
@@ -94,4 +112,67 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
         }
         return q;
     }
+
+    /**
+     * Get all distinct values of the categories field. An empty string is
+     * added.
+     *
+     * @return an array with all the distinct categories
+     */
+    public String[] getDistinctCategories() {
+        ArrayList<String> list = new ArrayList();
+        list.add("");
+        for (Transaction t : this) {
+            if (!list.contains(t.getCategory())) {
+                list.add(t.getCategory());
+            }
+        }
+        Collections.sort(list);
+        return (String[]) list.toArray(new String[list.size()]);
+    }
+
+    /**
+     * Get all distinct values of the transactors field. An empty string is
+     * added.
+     *
+     * @return an array with all the distinct transactors
+     */
+    public String[] getDistinctTransactors() {
+        ArrayList<String> list = new ArrayList();
+        list.add("");
+        for (Transaction t : this) {
+            String element = t.getTransactorCategory() + " > " + t.getTransactor();
+            if (!list.contains(element)) {
+                list.add(element);
+            }
+            if (t.getPaidBackTransactor() != null) {
+                element = t.getPaidBackTransactorCategory() + " > " + t.getPaidBackTransactor();
+                if (!list.contains(element)) {
+                    list.add(element);
+                }
+            }
+        }
+        Collections.sort(list);
+        return (String[]) list.toArray(new String[list.size()]);
+    }
+
+    /**
+     * Get all distinct values of the payment methods field. An empty string is
+     * added.
+     *
+     * @return an array with all the distinct payment methods
+     */
+    public String[] getDistinctPaymentMethods() {
+        ArrayList<String> list = new ArrayList();
+        list.add("");
+        for (Transaction t : this) {
+            String element = t.getPaymentMethodCategory() + " > " + t.getPaymentMethod();
+            if (!list.contains(element)) {
+                list.add(element);
+            }
+        }
+        Collections.sort(list);
+        return (String[]) list.toArray(new String[list.size()]);
+    }
+
 }

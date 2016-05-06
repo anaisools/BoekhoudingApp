@@ -1,8 +1,11 @@
 package dialogs;
 
+import data.Data;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import javax.swing.*;
 import model.Transaction;
 
@@ -31,6 +34,9 @@ public class AddEditTransaction extends JDialog {
     private JScrollPane m_scrollPane;
     private JButton m_approveButton;
     private JButton m_disapproveButton;
+
+    private ArrayList<Component[]> m_fieldsGeneral;
+    private ArrayList<Component[]> m_fieldsLoans;
 
     // Constructors ------------------------------------------------------------
     public AddEditTransaction(JFrame parent) {
@@ -61,14 +67,31 @@ public class AddEditTransaction extends JDialog {
      */
     private void createComponents() {
         m_mainPanel = new JPanel();
-        m_mainPanel.setPreferredSize(new Dimension(800, 800));
-        m_mainPanel.setMinimumSize(m_mainPanel.getPreferredSize());
-        m_mainPanel.setBackground(Color.cyan);
 
         m_scrollPane = new JScrollPane(m_mainPanel);
 
         m_approveButton = new JButton("Ok");
         m_disapproveButton = new JButton("Cancel");
+
+        // create text values for dropdowns
+        String[] categories = Data.GetInstance().getTransactions().getDistinctCategories();
+        String[] transactors = Data.GetInstance().getTransactions().getDistinctTransactors();
+        String[] paymentMethods = Data.GetInstance().getTransactions().getDistinctPaymentMethods();
+
+        // text fields
+        m_fieldsGeneral = new ArrayList();
+        m_fieldsGeneral.add(new Component[]{new JLabel("Description"), new JTextField()});
+        m_fieldsGeneral.add(new Component[]{new JLabel("Price"), new JTextField()});
+        m_fieldsGeneral.add(new Component[]{new JLabel("Category"), editableCombobox(categories)});
+        m_fieldsGeneral.add(new Component[]{new JLabel("Transactor"), editableCombobox(transactors)});
+        m_fieldsGeneral.add(new Component[]{new JLabel("Date added"), new JTextField()});
+        m_fieldsGeneral.add(new Component[]{new JLabel("Date paid"), new JTextField()});
+        m_fieldsGeneral.add(new Component[]{new JLabel("Payment method"), editableCombobox(paymentMethods)});
+        m_fieldsLoans = new ArrayList();
+        m_fieldsLoans.add(new Component[]{new JLabel("Needs to be paid back"), new JTextField()});
+        m_fieldsLoans.add(new Component[]{new JLabel("Pay back transactor"), editableCombobox(transactors)});
+        m_fieldsLoans.add(new Component[]{new JLabel("Date paid back"), new JTextField()});
+
     }
 
     /**
@@ -89,10 +112,8 @@ public class AddEditTransaction extends JDialog {
      */
     private void setActions() {
         m_approveButton.addActionListener((ActionEvent ae) -> {
-            // TODO: validate
-            boolean valid1 = true;
-            if (valid1) {
-                // TODO: set transaction member
+            if (validateFields()) {
+                generateTransaction();
                 m_approved = true;
                 this.dispose();
             }
@@ -132,6 +153,143 @@ public class AddEditTransaction extends JDialog {
         c.weighty = 0;
         c.weightx = 0.5;
         this.add(m_approveButton, c);
+
+        createUITextFields();
+    }
+
+    /**
+     * Add all text fields to the content panel.
+     */
+    private void createUITextFields() {
+        Insets in = new Insets(10, 10, 10, 10);
+
+        // general
+        JPanel general = new JPanel();
+        general.setBorder(BorderFactory.createTitledBorder(" General "));
+        for (int col = 0; col < m_fieldsGeneral.size(); col++) {
+            Component[] c = m_fieldsGeneral.get(col);
+            addWithGridBagConstraints(general, true, true, in, 0, col, 0, 0, c[0]);
+            c[0].setPreferredSize(new Dimension(140, 25));
+            for (int row = 1; row < c.length; row++) {
+                addWithGridBagConstraints(general, true, true, in, row, col, 1, 0, c[row]);
+            }
+        }
+
+        // loans
+        JPanel loans = new JPanel();
+        loans.setBorder(BorderFactory.createTitledBorder(" Loans "));
+        for (int col = 0; col < m_fieldsLoans.size(); col++) {
+            Component[] c = m_fieldsLoans.get(col);
+            addWithGridBagConstraints(loans, true, true, in, 0, col, 0, 0, c[0]);
+            c[0].setPreferredSize(new Dimension(140, 25));
+            for (int row = 1; row < c.length; row++) {
+                addWithGridBagConstraints(loans, true, true, in, row, col, 1, 0, c[row]);
+            }
+        }
+
+        // main panel
+        addWithGridBagConstraints(m_mainPanel, true, false, in, 0, 0, 1, 1, general);
+        addWithGridBagConstraints(m_mainPanel, true, false, in, 0, 1, 1, 1, loans);
+
+    }
+
+    /**
+     * Add a component to a JPanel with certain layout parameters.
+     *
+     * @param panel
+     * @param hFill
+     * @param vFill
+     * @param in
+     * @param x
+     * @param y
+     * @param xFill
+     * @param yFill
+     * @param o the component to add
+     */
+    private void addWithGridBagConstraints(JPanel panel, boolean hFill, boolean vFill, Insets in, int x, int y, int xFill, int yFill, Component o) {
+        if (panel.getLayout().getClass() != GridBagLayout.class) {
+            panel.setLayout(new GridBagLayout());
+        }
+        GridBagConstraints c = new GridBagConstraints();
+        if (hFill && vFill) {
+            c.fill = GridBagConstraints.BOTH;
+        } else if (hFill) {
+            c.fill = GridBagConstraints.HORIZONTAL;
+        } else if (vFill) {
+            c.fill = GridBagConstraints.VERTICAL;
+        }
+        c.insets = in;
+        c.gridx = x;
+        c.gridy = y;
+        c.weightx = xFill;
+        c.weighty = yFill;
+        panel.add(o, c);
+    }
+
+    /**
+     * Create an editable JComboBox with a given set of values.
+     *
+     * @param values
+     * @return
+     */
+    private JComboBox editableCombobox(String[] values) {
+        JComboBox jcb = new JComboBox(values);
+        jcb.setEditable(true);
+        return jcb;
+    }
+
+    /**
+     * Validate all text fields. If this function succeeds, the text fields can
+     * be turned into a transaction object.
+     *
+     * @return
+     */
+    private boolean validateFields() {
+        // TODO: validation
+        return true;
+    }
+
+    /**
+     * Generate a transaction from the (validated) text fields.
+     */
+    private void generateTransaction() {
+        if (m_transaction == null) {
+            m_transaction = new Transaction(Data.GetInstance().getTransactions().getNewID());
+        }
+        SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+        String[] split;
+        for (Component[] c : m_fieldsGeneral) {
+            try {
+                System.out.println(((JLabel) c[0]).getText());
+                switch (((JLabel) c[0]).getText()) {
+                    case "Description":
+                        m_transaction.setDescription(((JTextField) c[1]).getText());
+                        break;
+                    case "Price":
+                        m_transaction.setPrice(Double.parseDouble(((JTextField) c[1]).getText()));
+                        break;
+                    case "Category":
+                        m_transaction.setCategory((String) ((JComboBox) c[1]).getSelectedItem());
+                        break;
+                    case "Transactor":
+                        split = ((String) ((JComboBox) c[1]).getSelectedItem()).split(" > ");
+                        m_transaction.setTransactor(split[1], split[0]);
+                        break;
+                    case "Date added":
+                        m_transaction.setDateAdded(df.parse(((JTextField) c[1]).getText()));
+                        break;
+                    case "Date paid":
+                        m_transaction.setDatePaid(df.parse(((JTextField) c[1]).getText()));
+                        break;
+                    case "Payment method":
+                        split = ((String) ((JComboBox) c[1]).getSelectedItem()).split(" > ");
+                        m_transaction.setPaymentMethod(split[1], split[0]);
+                        break;
+                }
+            } catch (ParseException ex) {
+                System.out.println("\t\tParse exception");
+            }
+        }
     }
 
     // Public functions --------------------------------------------------------

@@ -5,8 +5,6 @@ import data.QueryableList;
 import dialogs.AddEditTransaction;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import javafx.util.Pair;
 import javax.swing.*;
@@ -117,16 +115,8 @@ public class HistoryPanel extends JPanel implements Observer {
         m_addButton.addActionListener((ActionEvent ae) -> {
             AddEditTransaction dialog = new AddEditTransaction(m_parentFrame);
             dialog.show();
-            if (dialog.isApproved()) {
-                System.out.println("Dialog was approved.");
-                if (dialog.getTransaction() != null) {
-                    System.out.println(dialog.getTransaction());
-                    // Data.GetInstance().getTransactions().add(dialog.getTransaction());
-                } else {
-                    System.out.println("Transaction is null.");
-                }
-            } else {
-                System.out.println("Dialog was not approved.");
+            if (dialog.isApproved() && dialog.getTransaction() != null) {
+                Data.GetInstance().getTransactions().add(dialog.getTransaction());
             }
         });
         m_editButton.addActionListener((ActionEvent ae) -> {
@@ -134,16 +124,7 @@ public class HistoryPanel extends JPanel implements Observer {
             if (t != null) {
                 AddEditTransaction dialog = new AddEditTransaction(m_parentFrame, t);
                 dialog.show();
-                if (dialog.isApproved()) {
-                    System.out.println("Dialog was approved.");
-                    if (dialog.getTransaction() != null) {
-                        System.out.println(dialog.getTransaction());
-                    } else {
-                        System.out.println("Transaction is null.");
-                    }
-                } else {
-                    System.out.println("Dialog was not approved.");
-                }
+                // on approving, the passed transaction will be changed and notify the views all by itself.
             }
         });
     }
