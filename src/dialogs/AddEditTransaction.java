@@ -3,10 +3,10 @@ package dialogs;
 import data.Data;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import java.text.*;
+import java.util.*;
 import javax.swing.*;
+import javax.swing.text.*;
 import model.Transaction;
 
 /**
@@ -48,6 +48,7 @@ public class AddEditTransaction extends JDialog {
         setPreferences();
         setActions();
         createUI();
+        loadData();
     }
 
     public AddEditTransaction(JFrame parent, Transaction transactionToEdit) {
@@ -59,6 +60,7 @@ public class AddEditTransaction extends JDialog {
         setPreferences();
         setActions();
         createUI();
+        loadData();
     }
 
     // Private functions -------------------------------------------------------
@@ -81,9 +83,9 @@ public class AddEditTransaction extends JDialog {
         // text fields
         m_fieldsGeneral = new ArrayList();
         m_fieldsGeneral.add(new Component[]{new JLabel("Description"), new JTextField()});
-        m_fieldsGeneral.add(new Component[]{new JLabel("Price"), new JTextField()});
+        m_fieldsGeneral.add(new Component[]{new JLabel("Price (€)"), currencySpinner()});
         m_fieldsGeneral.add(new Component[]{new JLabel("Category"), editableCombobox(categories)});
-        m_fieldsGeneral.add(new Component[]{new JLabel("Transactor"), editableCombobox(transactors)});
+        m_fieldsGeneral.add(new Component[]{new JLabel("Transactor"), editableValidationCombobox(transactors)});
         m_fieldsGeneral.add(new Component[]{new JLabel("Date added"), new JTextField()});
         m_fieldsGeneral.add(new Component[]{new JLabel("Date paid"), new JTextField()});
         m_fieldsGeneral.add(new Component[]{new JLabel("Payment method"), editableCombobox(paymentMethods)});
@@ -260,13 +262,12 @@ public class AddEditTransaction extends JDialog {
         String[] split;
         for (Component[] c : m_fieldsGeneral) {
             try {
-                System.out.println(((JLabel) c[0]).getText());
                 switch (((JLabel) c[0]).getText()) {
                     case "Description":
                         m_transaction.setDescription(((JTextField) c[1]).getText());
                         break;
-                    case "Price":
-                        m_transaction.setPrice(Double.parseDouble(((JTextField) c[1]).getText()));
+                    case "Price (€)":
+                        m_transaction.setPrice((Double) (((JSpinner) c[1]).getValue()));
                         break;
                     case "Category":
                         m_transaction.setCategory((String) ((JComboBox) c[1]).getSelectedItem());
@@ -288,6 +289,77 @@ public class AddEditTransaction extends JDialog {
                 }
             } catch (ParseException ex) {
                 System.out.println("\t\tParse exception");
+            }
+        }
+    }
+
+    /**
+     * Create a spinner that formats its text as a currency.
+     *
+     * @return
+     */
+    private Component currencySpinner() {
+        SpinnerNumberModel model = new SpinnerNumberModel(0.0, -1000000000.0, 1000000000.0, 0.5);
+        JSpinner spinner = new JSpinner(model);
+        String pattern = "0.00";
+        JSpinner.NumberEditor editor = new JSpinner.NumberEditor(spinner, pattern);
+        DecimalFormat format = editor.getFormat();
+        DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols(Locale.FRANCE);
+        format.setDecimalFormatSymbols(decimalFormatSymbols);
+        spinner.setEditor(editor);
+        return spinner;
+    }
+
+    /**
+     * Create an editable combobox that checks if its text contains " > ".
+     *
+     * @param values
+     * @return
+     */
+    private Component editableValidationCombobox(String[] values) {
+        JComboBox combo = editableCombobox(values);
+        JTextField tf = (JTextField) (combo.getEditor().getEditorComponent());
+        tf.setInputVerifier(new InputVerifier() {
+            @Override
+            public boolean verify(JComponent input) {
+                String text = ((JTextField) input).getText();
+                return text.contains(" > ");
+            }
+        });
+        return combo;
+    }
+
+    private void loadData() {
+        if (m_transaction == null) {
+            return;
+        }
+        SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+        String comb;
+        for (Component[] c : m_fieldsGeneral) {
+            switch (((JLabel) c[0]).getText()) {
+                case "Description":
+                    ((JTextField) c[1]).setText(m_transaction.getDescription());
+                    break;
+                case "Price (€)":
+                    ((JSpinner) c[1]).setValue(m_transaction.getPrice());
+                    break;
+                case "Category":
+                    ((JComboBox) c[1]).setSelectedItem(m_transaction.getCategory());
+                    break;
+                case "Transactor":
+                    comb = m_transaction.getTransactorCategory() + " > " + m_transaction.getTransactor();
+                    ((JComboBox) c[1]).setSelectedItem(comb);
+                    break;
+                case "Date added":
+                    //m_transaction.setDateAdded(df.parse(((JTextField) c[1]).getText()));
+                    break;
+                case "Date paid":
+                    //m_transaction.setDatePaid(df.parse(((JTextField) c[1]).getText()));
+                    break;
+                case "Payment method":
+                    comb = m_transaction.getPaymentMethodCategory() + " > " + m_transaction.getPaymentMethod();
+                    ((JComboBox) c[1]).setSelectedItem(comb);
+                    break;
             }
         }
     }
