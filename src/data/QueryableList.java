@@ -113,6 +113,19 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
         return q;
     }
 
+    public QueryableList selectDatePaidByMonth(int month) {
+        QueryableList q = new QueryableList();
+        Calendar cal = Calendar.getInstance();
+        for (Transaction t : this) {
+            cal.setTime(t.getDatePaid());
+            System.out.println(cal.get(Calendar.MONTH));
+            if (cal.get(Calendar.MONTH) == month) {
+                q.add(t);
+            }
+        }
+        return q;
+    }
+
     /**
      * Get all distinct values of the categories field. An empty string is
      * added.
@@ -175,4 +188,16 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
         return (String[]) list.toArray(new String[list.size()]);
     }
 
+    /**
+     * Calculate the total price of this list.
+     *
+     * @return
+     */
+    public double getTotalPrice() {
+        double total = 0.0;
+        for (Transaction t : this) {
+            total += t.getPrice();
+        }
+        return total;
+    }
 }

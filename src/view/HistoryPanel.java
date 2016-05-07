@@ -26,25 +26,25 @@ public class HistoryPanel extends JPanel implements Observer {
     private final JFrame m_parentFrame; // needed for opening dialogs that block the frame
 
     private TablePanel m_tablePanel;
-    private JPanel m_yearPanel;
+    private OverviewPanel m_yearPanel;
     private JPanel m_buttonPanel;
     private JPanel m_topPanel;
     private JLabel m_yearLabel;
     private int m_year;
     private QueryableList m_displayedData;
-
+    
     private JButton m_previousYearButton;
     private JButton m_nextYearButton;
-
+    
     private JButton m_addButton;
     private JButton m_editButton;
-
+    
     public HistoryPanel(JFrame parentFrame) {
         m_parentFrame = parentFrame;
 
         // make sure view changes when data changes
         Data.GetInstance().addAsObserver(this);
-
+        
         createComponents();
         setPreferences();
         setActions();
@@ -52,7 +52,7 @@ public class HistoryPanel extends JPanel implements Observer {
 
         // subset data to current year
         Calendar cal = Calendar.getInstance();
-        this.setYear(cal.get(Calendar.YEAR));
+        setYear(cal.get(Calendar.YEAR));
     }
 
     // Private functions -------------------------------------------------------
@@ -77,10 +77,7 @@ public class HistoryPanel extends JPanel implements Observer {
         m_nextYearButton = new JButton(">");
 
         // year panel
-        // TEMPORARY: create detectable panels
-        m_yearPanel = new JPanel();
-        m_yearPanel.setBackground(Color.cyan);
-        // END TEMPORARY
+        m_yearPanel = new OverviewPanel();
 
         // button panel
         m_buttonPanel = new JPanel();
@@ -155,32 +152,32 @@ public class HistoryPanel extends JPanel implements Observer {
         // set general UI
         this.setLayout(new GridBagLayout());
         c = new GridBagConstraints();
-
+        
         c.fill = GridBagConstraints.BOTH;
         c.gridx = 0;
         c.gridy = 0;
-        c.gridwidth = 2;
+        c.gridwidth = 3;
         c.weightx = 1.0;
         c.weighty = 0.1;
         this.add(m_topPanel, c);
-
+        
         c.gridx = 0;
         c.gridy = 1;
-        c.gridwidth = 1;
-        c.weightx = 0.6;
+        c.gridwidth = 2;
+        c.weightx = 0.9;
         c.weighty = 0.7;
         this.add(m_tablePanel, c);
-
-        c.gridx = 1;
+        
+        c.gridx = 2;
         c.gridy = 1;
         c.gridwidth = 1;
-        c.weightx = 0.4;
+        c.weightx = 0.1;
         c.weighty = 0.7;
         this.add(m_yearPanel, c);
-
+        
         c.gridx = 0;
         c.gridy = 2;
-        c.gridwidth = 2;
+        c.gridwidth = 3;
         c.weightx = 1.0;
         c.weighty = 0.1;
         this.add(m_buttonPanel, c);
@@ -195,7 +192,6 @@ public class HistoryPanel extends JPanel implements Observer {
     private void setYear(int year) {
         m_year = year;
         m_yearLabel.setText(Integer.toString(m_year));
-
         update(null, null);
     }
 
@@ -208,10 +204,13 @@ public class HistoryPanel extends JPanel implements Observer {
      */
     @Override
     public void update(Observable o, Object o1) {
-        // Update the table
         m_displayedData = Data.GetInstance().getTransactions().selectDatePaidByYear(m_year);
+
+        // Update the table
         m_tablePanel.setData(m_displayedData.toList());
 
         // TODO: Update the year-widget
+        m_yearPanel.setYear(m_year);
+        m_yearPanel.setData(m_displayedData);
     }
 }

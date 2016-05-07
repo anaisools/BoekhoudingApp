@@ -89,7 +89,7 @@ public class MainWindow extends JFrame {
      */
     private void setPreferences() {
         // Frame size
-        this.setPreferredSize(new Dimension(1000, 600));
+        this.setPreferredSize(new Dimension(1000, 800));
         this.setMinimumSize(this.getPreferredSize());
 
         // Center frame on screen
