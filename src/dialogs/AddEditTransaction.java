@@ -5,6 +5,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.text.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.text.*;
 import model.Transaction;
@@ -86,13 +88,13 @@ public class AddEditTransaction extends JDialog {
         m_fieldsGeneral.add(new Component[]{new JLabel("Price (€)"), currencySpinner()});
         m_fieldsGeneral.add(new Component[]{new JLabel("Category"), editableCombobox(categories)});
         m_fieldsGeneral.add(new Component[]{new JLabel("Transactor"), editableValidationCombobox(transactors)});
-        m_fieldsGeneral.add(new Component[]{new JLabel("Date added"), new JTextField()});
-        m_fieldsGeneral.add(new Component[]{new JLabel("Date paid"), new JTextField()});
+        m_fieldsGeneral.add(new Component[]{new JLabel("Date added"), dateTextfield(true)});
+        m_fieldsGeneral.add(new Component[]{new JLabel("Date paid"), dateTextfield(true)});
         m_fieldsGeneral.add(new Component[]{new JLabel("Payment method"), editableCombobox(paymentMethods)});
         m_fieldsLoans = new ArrayList();
         m_fieldsLoans.add(new Component[]{new JLabel("Needs to be paid back"), new JTextField()});
         m_fieldsLoans.add(new Component[]{new JLabel("Pay back transactor"), editableCombobox(transactors)});
-        m_fieldsLoans.add(new Component[]{new JLabel("Date paid back"), new JTextField()});
+        m_fieldsLoans.add(new Component[]{new JLabel("Date paid back"), dateTextfield(false)});
 
     }
 
@@ -114,11 +116,9 @@ public class AddEditTransaction extends JDialog {
      */
     private void setActions() {
         m_approveButton.addActionListener((ActionEvent ae) -> {
-            if (validateFields()) {
-                generateTransaction();
-                m_approved = true;
-                this.dispose();
-            }
+            generateTransaction();
+            m_approved = true;
+            this.dispose();
         });
         m_disapproveButton.addActionListener((ActionEvent ae) -> {
             m_approved = false;
@@ -196,6 +196,87 @@ public class AddEditTransaction extends JDialog {
     }
 
     /**
+     * Generate a transaction from the (validated) text fields.
+     */
+    private void generateTransaction() {
+        if (m_transaction == null) {
+            m_transaction = new Transaction(Data.GetInstance().getTransactions().getNewID());
+        }
+        SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+        String[] split;
+        for (Component[] c : m_fieldsGeneral) {
+            try {
+                switch (((JLabel) c[0]).getText()) {
+                    case "Description":
+                        m_transaction.setDescription(((JTextField) c[1]).getText());
+                        break;
+                    case "Price (€)":
+                        m_transaction.setPrice((Double) (((JSpinner) c[1]).getValue()));
+                        break;
+                    case "Category":
+                        m_transaction.setCategory((String) ((JComboBox) c[1]).getSelectedItem());
+                        break;
+                    case "Transactor":
+                        split = ((String) ((JComboBox) c[1]).getSelectedItem()).split(" > ");
+                        m_transaction.setTransactor(split[1], split[0]);
+                        break;
+                    case "Date added":
+                        m_transaction.setDateAdded(df.parse(((JTextField) c[1]).getText()));
+                        break;
+                    case "Date paid":
+                        m_transaction.setDatePaid(df.parse(((JTextField) c[1]).getText()));
+                        break;
+                    case "Payment method":
+                        split = ((String) ((JComboBox) c[1]).getSelectedItem()).split(" > ");
+                        m_transaction.setPaymentMethod(split[1], split[0]);
+                        break;
+                }
+            } catch (ParseException ex) {
+                System.out.println("\t\tParse exception");
+            }
+        }
+    }
+
+    /**
+     * Load the data of an existing transaction into the text fields.
+     */
+    private void loadData() {
+        if (m_transaction == null) {
+            return;
+        }
+        SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+        String comb;
+        for (Component[] c : m_fieldsGeneral) {
+            switch (((JLabel) c[0]).getText()) {
+                case "Description":
+                    ((JTextField) c[1]).setText(m_transaction.getDescription());
+                    break;
+                case "Price (€)":
+                    ((JSpinner) c[1]).setValue(m_transaction.getPrice());
+                    break;
+                case "Category":
+                    ((JComboBox) c[1]).setSelectedItem(m_transaction.getCategory());
+                    break;
+                case "Transactor":
+                    comb = m_transaction.getTransactorCategory() + " > " + m_transaction.getTransactor();
+                    ((JComboBox) c[1]).setSelectedItem(comb);
+                    break;
+                case "Date added":
+                    ((JTextField) c[1]).setText(df.format(m_transaction.getDateAdded()));
+                    break;
+                case "Date paid":
+                    ((JTextField) c[1]).setText(df.format(m_transaction.getDatePaid()));
+                    break;
+                case "Payment method":
+                    comb = m_transaction.getPaymentMethodCategory() + " > " + m_transaction.getPaymentMethod();
+                    ((JComboBox) c[1]).setSelectedItem(comb);
+                    break;
+            }
+        }
+    }
+
+    // UI help functions -------------------------------------------------------
+    /**
      * Add a component to a JPanel with certain layout parameters.
      *
      * @param panel
@@ -241,59 +322,6 @@ public class AddEditTransaction extends JDialog {
     }
 
     /**
-     * Validate all text fields. If this function succeeds, the text fields can
-     * be turned into a transaction object.
-     *
-     * @return
-     */
-    private boolean validateFields() {
-        // TODO: validation
-        return true;
-    }
-
-    /**
-     * Generate a transaction from the (validated) text fields.
-     */
-    private void generateTransaction() {
-        if (m_transaction == null) {
-            m_transaction = new Transaction(Data.GetInstance().getTransactions().getNewID());
-        }
-        SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
-        String[] split;
-        for (Component[] c : m_fieldsGeneral) {
-            try {
-                switch (((JLabel) c[0]).getText()) {
-                    case "Description":
-                        m_transaction.setDescription(((JTextField) c[1]).getText());
-                        break;
-                    case "Price (€)":
-                        m_transaction.setPrice((Double) (((JSpinner) c[1]).getValue()));
-                        break;
-                    case "Category":
-                        m_transaction.setCategory((String) ((JComboBox) c[1]).getSelectedItem());
-                        break;
-                    case "Transactor":
-                        split = ((String) ((JComboBox) c[1]).getSelectedItem()).split(" > ");
-                        m_transaction.setTransactor(split[1], split[0]);
-                        break;
-                    case "Date added":
-                        m_transaction.setDateAdded(df.parse(((JTextField) c[1]).getText()));
-                        break;
-                    case "Date paid":
-                        m_transaction.setDatePaid(df.parse(((JTextField) c[1]).getText()));
-                        break;
-                    case "Payment method":
-                        split = ((String) ((JComboBox) c[1]).getSelectedItem()).split(" > ");
-                        m_transaction.setPaymentMethod(split[1], split[0]);
-                        break;
-                }
-            } catch (ParseException ex) {
-                System.out.println("\t\tParse exception");
-            }
-        }
-    }
-
-    /**
      * Create a spinner that formats its text as a currency.
      *
      * @return
@@ -329,39 +357,28 @@ public class AddEditTransaction extends JDialog {
         return combo;
     }
 
-    private void loadData() {
-        if (m_transaction == null) {
-            return;
+    /**
+     * Create a textField which only accepts dates.
+     *
+     * @param today true if the text should be set to today.
+     * @return
+     */
+    private Component dateTextfield(boolean today) {
+        DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+        JFormattedTextField ftf = new JFormattedTextField(df);
+        ftf.setColumns(10);
+        try {
+            MaskFormatter mf = new MaskFormatter("##/##/####");
+            mf.setPlaceholderCharacter('_');
+            mf.install(ftf);
+        } catch (ParseException ex) {
+            System.out.println("Mask went wrong");
         }
-        SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
-        String comb;
-        for (Component[] c : m_fieldsGeneral) {
-            switch (((JLabel) c[0]).getText()) {
-                case "Description":
-                    ((JTextField) c[1]).setText(m_transaction.getDescription());
-                    break;
-                case "Price (€)":
-                    ((JSpinner) c[1]).setValue(m_transaction.getPrice());
-                    break;
-                case "Category":
-                    ((JComboBox) c[1]).setSelectedItem(m_transaction.getCategory());
-                    break;
-                case "Transactor":
-                    comb = m_transaction.getTransactorCategory() + " > " + m_transaction.getTransactor();
-                    ((JComboBox) c[1]).setSelectedItem(comb);
-                    break;
-                case "Date added":
-                    //m_transaction.setDateAdded(df.parse(((JTextField) c[1]).getText()));
-                    break;
-                case "Date paid":
-                    //m_transaction.setDatePaid(df.parse(((JTextField) c[1]).getText()));
-                    break;
-                case "Payment method":
-                    comb = m_transaction.getPaymentMethodCategory() + " > " + m_transaction.getPaymentMethod();
-                    ((JComboBox) c[1]).setSelectedItem(comb);
-                    break;
-            }
+        if (today) {
+            Date date = new Date();
+            ftf.setText(df.format(date));
         }
+        return ftf;
     }
 
     // Public functions --------------------------------------------------------
