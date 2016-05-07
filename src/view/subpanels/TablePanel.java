@@ -1,4 +1,4 @@
-package view;
+package view.subpanels;
 
 import data.Data;
 import java.awt.*;
@@ -8,6 +8,7 @@ import javafx.util.Pair;
 import javax.swing.*;
 import javax.swing.table.*;
 import model.Transaction;
+import view.swingextensions.*;
 
 /**
  * This panel represents a table filled with Transactions. It's placed inside a
@@ -31,7 +32,7 @@ public class TablePanel extends JPanel {
         DESCRIPTION, PRICE, CATEGORY, TRANSACTOR, DATEADDED, DATEPAID, PAYMENTMETHOD
     };
 
-    // Members & constructor ---------------------------------------------------
+    // Constructors ------------------------------------------------------------
     public TablePanel(ArrayList<Pair<String, COLUMNTYPE>> columns) {
         m_data = new ArrayList();
         m_columns = columns;
@@ -75,18 +76,18 @@ public class TablePanel extends JPanel {
      * Set layout-related preferences for the frame.
      */
     private void setPreferences() {
-        m_table.setDefaultRenderer(Object.class, new PaddingRenderer());
+        m_table.setDefaultRenderer(Object.class, new PaddingTableCellRenderer());
         for (Pair<String, COLUMNTYPE> p : m_columns) {
             switch (p.getValue()) {
                 case DESCRIPTION:
                     getColumn(p.getKey()).setPreferredWidth(250);
                     break;
                 case PRICE:
-                    getColumn(p.getKey()).setCellRenderer(new PriceRenderer());
+                    getColumn(p.getKey()).setCellRenderer(new PriceTableCellRenderer());
                     break;
                 case DATEADDED:
                 case DATEPAID:
-                    getColumn(p.getKey()).setCellRenderer(new DateRenderer());
+                    getColumn(p.getKey()).setCellRenderer(new DateTableCellRenderer());
                     break;
             }
         }
@@ -243,59 +244,4 @@ public class TablePanel extends JPanel {
         }
     }
 
-    private static class PaddingRenderer extends DefaultTableCellRenderer {
-
-        public PaddingRenderer() {
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-            return this;
-        }
-    }
-
-    private static class PriceRenderer extends PaddingRenderer {
-
-        public PriceRenderer() {
-            setHorizontalAlignment(SwingConstants.RIGHT);
-        }
-
-        @Override
-        public void setValue(Object value) {
-            String result = String.format("%10.2f", value);
-            result = result.trim();
-            value = "€  " + result.replace('.', ',');
-            super.setValue(value);
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-        }
-    }
-
-    private static class DateRenderer extends PaddingRenderer {
-
-        DateFormat df;
-
-        public DateRenderer() {
-            setHorizontalAlignment(SwingConstants.RIGHT);
-            df = new SimpleDateFormat("EEEE, dd/MM/yyyy");
-        }
-
-        @Override
-        public void setValue(Object value) {
-            if (value.getClass().equals(Date.class)) {
-                value = df.format((Date) value);
-            }
-            super.setValue(value);
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-        }
-    }
 }

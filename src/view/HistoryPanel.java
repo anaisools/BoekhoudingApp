@@ -9,6 +9,7 @@ import java.util.*;
 import javafx.util.Pair;
 import javax.swing.*;
 import model.Transaction;
+import view.subpanels.*;
 
 /**
  * This panel fills one of the tabs of the MainWindow. It contains a table with
@@ -82,11 +83,7 @@ public class HistoryPanel extends JPanel implements Observer {
         // END TEMPORARY
 
         // button panel
-        // TEMPORARY: create detectable panels
         m_buttonPanel = new JPanel();
-        //m_buttonPanel.setBackground(Color.red);
-        // END TEMPORARY
-
         m_addButton = new JButton("Add");
         m_editButton = new JButton("Edit");
     }
