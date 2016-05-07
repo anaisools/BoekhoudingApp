@@ -2,7 +2,6 @@ package view.subpanels;
 
 import data.Data;
 import java.awt.*;
-import java.text.*;
 import java.util.*;
 import javafx.util.Pair;
 import javax.swing.*;
@@ -67,7 +66,7 @@ public class TablePanel extends JPanel {
         // Make columns sortable
         TableRowSorter<TableModel> rowSorter = new TableRowSorter(m_table.getModel());
         for (int i = 0; i < m_table.getModel().getColumnCount(); i++) {
-            rowSorter.setComparator(i, new CustomComparator());
+            rowSorter.setComparator(i, new TableCellComparator());
         }
         m_table.setRowSorter(rowSorter);
     }
@@ -224,24 +223,4 @@ public class TablePanel extends JPanel {
         long id = (long) m_table.getModel().getValueAt(selectedModelRow, 0);
         return Data.GetInstance().getTransactions().get(id);
     }
-
-    // Private classes ---------------------------------------------------------
-    /**
-     * Compare two objects as numbers if they are numeric values. Otherwise,
-     * compare their string-representation.
-     */
-    private static class CustomComparator implements Comparator {
-
-        @Override
-        public int compare(Object a, Object b) {
-            if (a.getClass().equals(Double.class)) {
-                return ((Double) a).compareTo((Double) b);
-            } else if (a.getClass().equals(Date.class)) {
-                return ((Date) a).compareTo((Date) b);
-            } else {
-                return a.toString().compareTo(b.toString());
-            }
-        }
-    }
-
 }
