@@ -7,7 +7,7 @@ import model.Transaction;
 
 /**
  * Singleton class: only one instance exists. This class loads the data, using
- * the XMLFileReader class into an in-memory list of Transaction objects. This
+ * the XMLFileParser class into an in-memory list of Transaction objects. This
  * list can be queried afterwards.
  *
  * This class is observable. Classes who use the data somewhere should declare
@@ -21,32 +21,35 @@ import model.Transaction;
 public class Data extends Observable implements Observer {
 
     // Members -----------------------------------------------------------------
-    private final QueryableList m_transactions;
+    private QueryableList m_transactions;
+    private boolean m_loadingDataSucceeded;
 
     // Private functions -------------------------------------------------------
     /**
-     * Create a new XMLFileReader object.
+     * Create a new XMLFileParser object.
      */
     private void init() {
-        // TODO: create new XMLFileReader object as member
+        m_loadingDataSucceeded = true;
+
+        XMLFileHandler xfh = new XMLFileHandler("data.xml");
+        if (!xfh.success()) {
+            m_loadingDataSucceeded = false;
+        } else {
+            m_transactions = new QueryableList(xfh.getTransactions());
+            m_transactions.addAsObserver(this);
+        }
+
+        //loadData();
+        // TODO: create new XMLFileParser object as member
     }
 
-    /**
-     * Tell observers that the data has changed.
-     */
-    private void notifyObserversOfChange() {
-        this.setChanged();
-        this.notifyObservers();
-    }
-
-    // Public functions --------------------------------------------------------
     /**
      * Get data from XMLFileReader.
      *
      * @return true if success, false otherwise
      */
-    public boolean loadData() {
-        // TODO: load from file using XMLFileReader class
+    private void loadData() {
+        // TODO: load from file using XMLFileParser class
 
         try {
             // TEMPORARY: hardcoded objects created
@@ -83,12 +86,24 @@ public class Data extends Observable implements Observer {
             m_transactions.add(t2);
             // END TEMPORARY
 
-            return true;
         } catch (ParseException ex) {
             System.out.println("Parsing of date failed");
             System.out.println(ex.getMessage());
-            return false;
+            m_loadingDataSucceeded = false;
         }
+    }
+
+    /**
+     * Tell observers that the data has changed.
+     */
+    private void notifyObserversOfChange() {
+        this.setChanged();
+        this.notifyObservers();
+    }
+
+    // Public functions --------------------------------------------------------
+    public boolean loadingDataSucceeded() {
+        return m_loadingDataSucceeded;
     }
 
     public QueryableList getTransactions() {
@@ -127,8 +142,6 @@ public class Data extends Observable implements Observer {
     }
 
     private Data() { // private because singleton
-        m_transactions = new QueryableList();
-        m_transactions.addAsObserver(this);
         init();
     }
 

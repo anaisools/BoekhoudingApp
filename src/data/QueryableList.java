@@ -11,11 +11,18 @@ import model.Transaction;
  */
 public class QueryableList extends Observable implements Observer, Iterable<Transaction> {
 
-    // Members -----------------------------------------------------------------
+    // Members & constructors --------------------------------------------------
     private final ArrayList<Transaction> m_list;
-
+    
     public QueryableList() {
         m_list = new ArrayList();
+    }
+    
+    public QueryableList(ArrayList<Transaction> list) {
+        m_list = list;
+        for (Transaction t : m_list) {
+            t.addObserver(this);
+        }
     }
 
     // Private functions -------------------------------------------------------
@@ -37,17 +44,17 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
     public void addAsObserver(Observer o) {
         this.addObserver(o);
     }
-
+    
     public void add(Transaction t) {
         m_list.add(t);
         t.addAsObserver(this);
         notifyObserversOfChange();
     }
-
+    
     public Transaction get(int index) {
         return m_list.get(index);
     }
-
+    
     public Transaction get(long id) {
         for (Transaction t : m_list) {
             if (t.getID() == id) {
@@ -73,7 +80,7 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
         // increment
         return ++id;
     }
-
+    
     @Override
     public Iterator<Transaction> iterator() {
         return m_list.iterator();
@@ -112,13 +119,12 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
         }
         return q;
     }
-
+    
     public QueryableList selectDatePaidByMonth(int month) {
         QueryableList q = new QueryableList();
         Calendar cal = Calendar.getInstance();
         for (Transaction t : this) {
             cal.setTime(t.getDatePaid());
-            System.out.println(cal.get(Calendar.MONTH));
             if (cal.get(Calendar.MONTH) == month) {
                 q.add(t);
             }

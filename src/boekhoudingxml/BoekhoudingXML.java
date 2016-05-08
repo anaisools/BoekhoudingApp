@@ -36,10 +36,7 @@ public class BoekhoudingXML {
     }
 
     private boolean loadData() {
-        boolean success = Data.GetInstance().loadData();
-        System.out.println(Data.GetInstance().getTransactions().get(0L).getDescription());
-        System.out.println(Data.GetInstance().getTransactions().get(1L).getDescription());
-        return success;
+        return Data.GetInstance().loadingDataSucceeded();
     }
 
     private void openFrame() {
