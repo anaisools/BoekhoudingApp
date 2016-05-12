@@ -112,9 +112,16 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
         QueryableList q = new QueryableList();
         Calendar cal = Calendar.getInstance();
         for (Transaction t : this) {
-            cal.setTime(t.getDatePaid());
-            if (cal.get(Calendar.YEAR) == year) {
-                q.add(t);
+            if (t.getDatePaid() != null) {
+                cal.setTime(t.getDatePaid());
+                if (cal.get(Calendar.YEAR) == year) {
+                    q.add(t);
+                }
+            } else {
+                cal.setTime(t.getDateAdded());
+                if (cal.get(Calendar.YEAR) == year) {
+                    q.add(t);
+                }
             }
         }
         return q;
@@ -124,9 +131,16 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
         QueryableList q = new QueryableList();
         Calendar cal = Calendar.getInstance();
         for (Transaction t : this) {
-            cal.setTime(t.getDatePaid());
-            if (cal.get(Calendar.MONTH) == month) {
-                q.add(t);
+            if (t.getDatePaid() != null) {
+                cal.setTime(t.getDatePaid());
+                if (cal.get(Calendar.MONTH) == month) {
+                    q.add(t);
+                }
+            } else {
+                cal.setTime(t.getDateAdded());
+                if (cal.get(Calendar.MONTH) == month) {
+                    q.add(t);
+                }
             }
         }
         return q;
@@ -164,8 +178,8 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
             if (!list.contains(element)) {
                 list.add(element);
             }
-            if (t.getPaidBackTransactor() != null) {
-                element = t.getPaidBackTransactorCategory() + " > " + t.getPaidBackTransactor();
+            if (t.getPaybackTransactor() != null) {
+                element = t.getPaybackTransactorCategory() + " > " + t.getPaybackTransactor();
                 if (!list.contains(element)) {
                     list.add(element);
                 }

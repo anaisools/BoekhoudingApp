@@ -136,15 +136,17 @@ public class XMLFileHandler {
         String[] requiredElements = new String[]{
             "ID", "description", "price", "category",
             "transactor", "transactorCategory",
-            "dateAdded", "datePaid",
+            "dateAdded", //"datePaid",
             "paymentMethod", "paymentMethodCategory"
         };
         for (String s : requiredElements) {
             if (!transaction.hasChild(s)) {
+                System.out.println("Not added because required field " + s + " not present.");
                 return;
             }
             XElement child = transaction.getChild(s);
             if (child.getValue() == null || child.getValue().equals("")) {
+                System.out.println("Not added because required field " + s + " is null.");
                 return;
             }
         }
@@ -174,6 +176,8 @@ public class XMLFileHandler {
                 case "paymentMethod":
                     t.setPaymentMethod(value, transaction.getChild("paymentMethodCategory").getValue());
                     break;
+                case "exceptional":
+                    t.setExceptional(Boolean.parseBoolean(value));
             }
         }
         m_transactions.add(t);

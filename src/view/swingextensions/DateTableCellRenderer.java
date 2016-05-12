@@ -24,7 +24,9 @@ public class DateTableCellRenderer extends PaddingTableCellRenderer {
 
     @Override
     public void setValue(Object value) {
-        if (value.getClass().equals(Date.class)) {
+        if (value == null) {
+            value = "";
+        } else if (value.getClass().equals(Date.class)) {
             value = df.format((Date) value);
         }
         super.setValue(value);

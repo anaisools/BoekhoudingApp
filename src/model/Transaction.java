@@ -19,15 +19,24 @@ public class Transaction extends Observable {
     private String m_transactor;
     private String m_transactorCategory;
     private Date m_dateAdded;
-    private Date m_datePaid;
     private String m_paymentMethod;
     private String m_paymentMethodCategory;
 
     // optional
-    private boolean m_needsToBePaidBack;
-    private Date m_datePaidBack;
-    private String m_paidBackTransactor;
-    private String m_paidBackTransactorCategory;
+    private Date m_datePaid;
+    private boolean m_exceptional;
+
+    // optional: payback
+    private boolean m_payback;
+    private String m_payBackTransactor;
+    private String m_payBackTransactorCategory;
+
+    // optional: job
+    private boolean m_isJob;
+    private double m_jobHours;
+    private double m_jobWage;
+    private Date m_jobDate;
+    private String m_employer;
 
     public Transaction(long id) {
         m_id = id;
@@ -99,20 +108,40 @@ public class Transaction extends Observable {
         return m_paymentMethodCategory;
     }
 
-    public boolean getNeedsToBePaidBack() {
-        return m_needsToBePaidBack;
+    public boolean needsPayback() {
+        return m_payback;
     }
 
-    public Date getDatePaidBack() {
-        return m_datePaidBack;
+    public String getPaybackTransactor() {
+        return m_payBackTransactor;
     }
 
-    public String getPaidBackTransactor() {
-        return m_paidBackTransactor;
+    public String getPaybackTransactorCategory() {
+        return m_payBackTransactorCategory;
     }
 
-    public String getPaidBackTransactorCategory() {
-        return m_paidBackTransactorCategory;
+    public boolean isExceptional() {
+        return m_exceptional;
+    }
+
+    public boolean isJob() {
+        return m_isJob;
+    }
+
+    public double getJobHours() {
+        return m_jobHours;
+    }
+
+    public double getJobWage() {
+        return m_jobWage;
+    }
+
+    public Date getJobDate() {
+        return m_jobDate;
+    }
+
+    public String getJobEmployer() {
+        return m_employer;
     }
 
     // Setters -----------------------------------------------------------------
@@ -153,19 +182,50 @@ public class Transaction extends Observable {
         notifyObserversOfChange();
     }
 
-    public void setNeedsToBePaidBack(boolean needsToBePaidBack) {
-        m_needsToBePaidBack = needsToBePaidBack;
+    public void setPayback(boolean needsPayback) {
+        m_payback = needsPayback;
         notifyObserversOfChange();
     }
 
-    public void setDatePaidBack(Date datePaidBack) {
-        m_datePaidBack = datePaidBack;
+    public void setPaybackTransactor(String paidBackTransactor, String paidBackTransactorCategory) {
+        setPayback(true);
+        m_payBackTransactor = paidBackTransactor;
+        m_payBackTransactorCategory = paidBackTransactorCategory;
         notifyObserversOfChange();
     }
 
-    public void setPaidBackTransactor(String paidBackTransactor, String paidBackTransactorCategory) {
-        m_paidBackTransactor = paidBackTransactor;
-        m_paidBackTransactorCategory = paidBackTransactorCategory;
+    public void setExceptional(boolean isExceptional) {
+        m_exceptional = isExceptional;
         notifyObserversOfChange();
     }
+
+    public void setJob(boolean isJob) {
+        m_isJob = isJob;
+        notifyObserversOfChange();
+    }
+
+    public void setJobHours(double jobHours) {
+        setJob(true);
+        m_jobHours = jobHours;
+        notifyObserversOfChange();
+    }
+
+    public void setJobWage(double jobWage) {
+        setJob(true);
+        m_jobWage = jobWage;
+        notifyObserversOfChange();
+    }
+
+    public void setJobDate(Date jobDate) {
+        setJob(true);
+        m_jobDate = jobDate;
+        notifyObserversOfChange();
+    }
+
+    public void setJobEmployer(String jobEmployer) {
+        setJob(true);
+        m_employer = jobEmployer;
+        notifyObserversOfChange();
+    }
+
 }

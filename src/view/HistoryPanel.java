@@ -66,8 +66,10 @@ public class HistoryPanel extends JPanel implements Observer {
         columns.add(new Pair("Price", TablePanel.COLUMNTYPE.PRICE));
         columns.add(new Pair("Category", TablePanel.COLUMNTYPE.CATEGORY));
         columns.add(new Pair("Transactor", TablePanel.COLUMNTYPE.TRANSACTOR));
-        columns.add(new Pair("Date", TablePanel.COLUMNTYPE.DATEPAID));
+        columns.add(new Pair("Date added", TablePanel.COLUMNTYPE.DATEADDED));
+        columns.add(new Pair("Date paid", TablePanel.COLUMNTYPE.DATEPAID));
         columns.add(new Pair("Payment method", TablePanel.COLUMNTYPE.PAYMENTMETHOD));
+        columns.add(new Pair("Exceptional", TablePanel.COLUMNTYPE.EXCEPTIONAL));
         m_tablePanel = new TablePanel(columns);
 
         // top panel

@@ -203,34 +203,38 @@ public class AddEditTransaction extends JDialog {
         SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
         String[] split;
         for (Component[] c : m_fieldsGeneral) {
-            try {
-                switch (((JLabel) c[0]).getText()) {
-                    case "Description":
-                        m_transaction.setDescription(((JTextField) c[1]).getText());
-                        break;
-                    case "Price (€)":
-                        m_transaction.setPrice((Double) (((JSpinner) c[1]).getValue()));
-                        break;
-                    case "Category":
-                        m_transaction.setCategory((String) ((JComboBox) c[1]).getSelectedItem());
-                        break;
-                    case "Transactor":
-                        split = ((String) ((JComboBox) c[1]).getSelectedItem()).split(" > ");
-                        m_transaction.setTransactor(split[1], split[0]);
-                        break;
-                    case "Date added":
+            switch (((JLabel) c[0]).getText()) {
+                case "Description":
+                    m_transaction.setDescription(((JTextField) c[1]).getText());
+                    break;
+                case "Price (€)":
+                    m_transaction.setPrice((Double) (((JSpinner) c[1]).getValue()));
+                    break;
+                case "Category":
+                    m_transaction.setCategory((String) ((JComboBox) c[1]).getSelectedItem());
+                    break;
+                case "Transactor":
+                    split = ((String) ((JComboBox) c[1]).getSelectedItem()).split(" > ");
+                    m_transaction.setTransactor(split[1], split[0]);
+                    break;
+                case "Date added":
+                    try {
                         m_transaction.setDateAdded(df.parse(((JTextField) c[1]).getText()));
-                        break;
-                    case "Date paid":
+                    } catch (ParseException ex) {
+                        m_transaction.setDateAdded(null);
+                    }
+                    break;
+                case "Date paid":
+                    try {
                         m_transaction.setDatePaid(df.parse(((JTextField) c[1]).getText()));
-                        break;
-                    case "Payment method":
-                        split = ((String) ((JComboBox) c[1]).getSelectedItem()).split(" > ");
-                        m_transaction.setPaymentMethod(split[1], split[0]);
-                        break;
-                }
-            } catch (ParseException ex) {
-                System.out.println("\t\tParse exception");
+                    } catch (ParseException ex) {
+                        m_transaction.setDatePaid(null);
+                    }
+                    break;
+                case "Payment method":
+                    split = ((String) ((JComboBox) c[1]).getSelectedItem()).split(" > ");
+                    m_transaction.setPaymentMethod(split[1], split[0]);
+                    break;
             }
         }
     }
@@ -260,10 +264,14 @@ public class AddEditTransaction extends JDialog {
                     ((JComboBox) c[1]).setSelectedItem(comb);
                     break;
                 case "Date added":
-                    ((JTextField) c[1]).setText(df.format(m_transaction.getDateAdded()));
+                    if (m_transaction.getDateAdded() != null) {
+                        ((JTextField) c[1]).setText(df.format(m_transaction.getDateAdded()));
+                    }
                     break;
                 case "Date paid":
-                    ((JTextField) c[1]).setText(df.format(m_transaction.getDatePaid()));
+                    if (m_transaction.getDatePaid() != null) {
+                        ((JTextField) c[1]).setText(df.format(m_transaction.getDatePaid()));
+                    }
                     break;
                 case "Payment method":
                     comb = m_transaction.getPaymentMethodCategory() + " > " + m_transaction.getPaymentMethod();

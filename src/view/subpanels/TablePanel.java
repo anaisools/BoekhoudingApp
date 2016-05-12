@@ -28,7 +28,7 @@ public class TablePanel extends JPanel {
 
     public enum COLUMNTYPE {
 
-        DESCRIPTION, PRICE, CATEGORY, TRANSACTOR, DATEADDED, DATEPAID, PAYMENTMETHOD
+        DESCRIPTION, PRICE, CATEGORY, TRANSACTOR, DATEADDED, DATEPAID, PAYMENTMETHOD, EXCEPTIONAL
     };
 
     // Constructors ------------------------------------------------------------
@@ -130,6 +130,15 @@ public class TablePanel extends JPanel {
             public boolean isCellEditable(int row, int column) {
                 return false; // make cells uneditable
             }
+
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                String columnName = this.getColumnName(columnIndex);
+                if (columnName.equals("Exceptional")) {
+                    return Boolean.class;
+                }
+                return super.getColumnClass(columnIndex);
+            }
         };
 
         // Create data
@@ -169,6 +178,9 @@ public class TablePanel extends JPanel {
                         break;
                     case PAYMENTMETHOD:
                         dataObject.add(t.getPaymentMethod());
+                        break;
+                    case EXCEPTIONAL:
+                        dataObject.add(t.isExceptional());
                         break;
                 }
             }
