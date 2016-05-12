@@ -1,7 +1,12 @@
 package view;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.util.Observable;
+import java.util.Observer;
 import javax.swing.*;
 
 /**
@@ -31,6 +36,9 @@ public class MainWindow extends JFrame {
             System.out.println("Something went wrong");
             System.out.println(ex.getMessage());
         }
+
+        KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+        manager.addKeyEventDispatcher(new ShortcutManager());
 
         this.setTitle("Boekhouding applicatie");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -79,9 +87,7 @@ public class MainWindow extends JFrame {
         m_tabs.setTabComponentAt(1, m_statsTab);
         m_tabs.setTabComponentAt(2, m_loansTab);
 
-        // Create menu bar
-        m_menuBar = new JMenuBar();
-        m_menuBar.add(new JMenu("Temp menu"));
+        createMenuBar();
     }
 
     /**
@@ -139,9 +145,73 @@ public class MainWindow extends JFrame {
         return new ImageIcon(resizedImg);
     }
 
+    /**
+     * Create the components of the menu bar.
+     */
+    private void createMenuBar() {
+        m_menuBar = new JMenuBar();
+        JMenu menu_file = new JMenu(" File ");
+        JMenu menu_preferences = new JMenu(" Preferences ");
+        JMenuItem item_save = new JMenuItem("Save");
+        JMenuItem item_savequit = new JMenuItem("Save and quit");
+        JMenuItem item_exit = new JMenuItem("Exit");
+
+        item_save.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
+        item_save.addActionListener(new DataTriggeredActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                System.out.println("Saving!");
+                data.Data.GetInstance().saveData();
+            }
+
+            @Override
+            public void update(Observable o, Object o1) {
+                item_save.setEnabled(data.Data.GetInstance().dataHasChanged());
+            }
+        });
+        item_exit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                System.exit(0);
+            }
+        });
+
+        m_menuBar.add(menu_file);
+        menu_file.add(item_save);
+        menu_file.add(item_savequit);
+        menu_file.addSeparator();
+        menu_file.add(item_exit);
+        m_menuBar.add(menu_preferences);
+    }
+
     // Public functions --------------------------------------------------------
     public void showFrame() {
         this.pack();
         this.setVisible(true);
+    }
+
+    // Private classes ---------------------------------------------------------
+    private class ShortcutManager implements KeyEventDispatcher {
+
+        @Override
+        public boolean dispatchKeyEvent(KeyEvent e) {
+            if ((e.getID() == KeyEvent.KEY_PRESSED) && (e.getKeyCode() == KeyEvent.VK_S) && ((e.getModifiers() & KeyEvent.CTRL_MASK) != 0)) {
+                data.Data.GetInstance().saveData();
+            }
+            return false;
+        }
+    }
+
+    private abstract class DataTriggeredActionListener implements ActionListener, Observer {
+
+        public DataTriggeredActionListener() {
+            data.Data.GetInstance().addAsObserver(this);
+        }
+
+        @Override
+        public abstract void actionPerformed(ActionEvent ae);
+
+        @Override
+        public abstract void update(Observable o, Object o1);
     }
 }

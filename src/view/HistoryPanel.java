@@ -8,7 +8,6 @@ import java.awt.event.ActionEvent;
 import java.util.*;
 import javafx.util.Pair;
 import javax.swing.*;
-import model.Transaction;
 import view.subpanels.*;
 
 /**
@@ -116,7 +115,7 @@ public class HistoryPanel extends JPanel implements Observer {
             }
         });
         m_editButton.addActionListener((ActionEvent ae) -> {
-            Transaction t = m_tablePanel.getSelectedTransaction();
+            model.Transaction t = m_tablePanel.getSelectedTransaction();
             if (t != null) {
                 AddEditTransaction dialog = new AddEditTransaction(m_parentFrame, t);
                 dialog.show();

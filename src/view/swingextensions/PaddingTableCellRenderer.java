@@ -7,9 +7,11 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 /**
  * A cellrenderer which adds padding to each field.
+ *
  * @author Anaïs Ools
  */
 public class PaddingTableCellRenderer extends DefaultTableCellRenderer {
+
     public PaddingTableCellRenderer() {
     }
 

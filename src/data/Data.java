@@ -1,9 +1,6 @@
 package data;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
-import model.Transaction;
 
 /**
  * Singleton class: only one instance exists. This class loads the data, using
@@ -23,6 +20,7 @@ public class Data extends Observable implements Observer {
     // Members -----------------------------------------------------------------
     private QueryableList m_transactions;
     private boolean m_loadingDataSucceeded;
+    private boolean m_dataHasChanged;
 
     // Private functions -------------------------------------------------------
     /**
@@ -30,6 +28,7 @@ public class Data extends Observable implements Observer {
      */
     private void init() {
         m_loadingDataSucceeded = true;
+        m_dataHasChanged = false;
 
         XMLFileHandler xfh = new XMLFileHandler("data.xml");
         if (!xfh.success()) {
@@ -37,59 +36,6 @@ public class Data extends Observable implements Observer {
         } else {
             m_transactions = new QueryableList(xfh.getTransactions());
             m_transactions.addAsObserver(this);
-        }
-
-        //loadData();
-        // TODO: create new XMLFileParser object as member
-    }
-
-    /**
-     * Get data from XMLFileReader.
-     *
-     * @return true if success, false otherwise
-     */
-    private void loadData() {
-        // TODO: load from file using XMLFileParser class
-
-        try {
-            // TEMPORARY: hardcoded objects created
-            SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
-
-            Transaction t0 = new Transaction(0);
-            t0.setDescription("Cadeautje voor Audric");
-            t0.setPrice(-30);
-            t0.setTransactor("Een winkel", "Winkel");
-            t0.setCategory("Cadeau");
-            t0.setDateAdded(df.parse("21/01/2016"));
-            t0.setDatePaid(df.parse("22/01/2016"));
-            t0.setPaymentMethod("Bankkaart", "Bank");
-            m_transactions.add(t0);
-
-            Transaction t1 = new Transaction(1);
-            t1.setDescription("Zakgeld");
-            t1.setPrice(15.92419);
-            t1.setTransactor("Mama", "Personen");
-            t1.setCategory("Zakgeld");
-            t1.setDateAdded(df.parse("19/01/2016"));
-            t1.setDatePaid(df.parse("19/01/2016"));
-            t1.setPaymentMethod("Overschrijving", "Bank");
-            m_transactions.add(t1);
-
-            Transaction t2 = new Transaction(1);
-            t2.setDescription("Iets heel duur");
-            t2.setPrice(-124.5);
-            t2.setTransactor("Iemand", "Personen");
-            t2.setCategory("Overig");
-            t2.setDateAdded(df.parse("20/01/2015"));
-            t2.setDatePaid(df.parse("20/01/2015"));
-            t2.setPaymentMethod("Overschrijving", "Bank");
-            m_transactions.add(t2);
-            // END TEMPORARY
-
-        } catch (ParseException ex) {
-            System.out.println("Parsing of date failed");
-            System.out.println(ex.getMessage());
-            m_loadingDataSucceeded = false;
         }
     }
 
@@ -128,6 +74,25 @@ public class Data extends Observable implements Observer {
      */
     @Override
     public void update(Observable o, Object o1) {
+        m_dataHasChanged = true;
+        notifyObserversOfChange();
+    }
+
+    /**
+     * Returns whether the data has changed since loading it or not.
+     *
+     * @return true if the data has changed, false if not.
+     */
+    public boolean dataHasChanged() {
+        return m_dataHasChanged;
+    }
+
+    /**
+     * Saves the data to the XML file.
+     */
+    public void saveData() {
+
+        m_dataHasChanged = false;
         notifyObserversOfChange();
     }
 

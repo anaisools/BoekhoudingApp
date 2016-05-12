@@ -66,7 +66,6 @@ public class XMLFileHandler {
             SAXParser saxParser = factory.newSAXParser();
             CustomXMLHandler handler = new CustomXMLHandler();
             saxParser.parse(m_filesLocation + m_filename, handler);
-            System.out.println(handler.getElements().toString());
             parseXMLToObjects(handler.getElements());
         } catch (ParserConfigurationException | org.xml.sax.SAXException | IOException ex) {
             System.out.println(ex.getMessage());
@@ -271,7 +270,6 @@ public class XMLFileHandler {
             String value = new String(ch, start, length);
             value = value.trim();
             if (!"".equals(value) && !"\n".equals(value)) {
-                System.out.println("\t\t\t" + value);
                 m_current.setValue(value);
             }
         }
