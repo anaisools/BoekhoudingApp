@@ -101,6 +101,9 @@ public class MainWindow extends JFrame {
         m_historyTab.setBorder(BorderFactory.createEmptyBorder(top, left, bottom, right));
         m_statsTab.setBorder(BorderFactory.createEmptyBorder(top, left, bottom, right));
         m_loansTab.setBorder(BorderFactory.createEmptyBorder(top, left, bottom, right));
+
+        // Maximize
+        this.setExtendedState(this.getExtendedState() | JFrame.MAXIMIZED_BOTH);
     }
 
     /**

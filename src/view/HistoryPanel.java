@@ -168,6 +168,7 @@ public class HistoryPanel extends JPanel implements Observer {
         c.gridwidth = 2;
         c.weightx = 0.9;
         c.weighty = 0.7;
+        c.insets = new Insets(0, 20, 0, 0);
         this.add(m_tablePanel, c);
         
         c.gridx = 2;
@@ -175,6 +176,7 @@ public class HistoryPanel extends JPanel implements Observer {
         c.gridwidth = 1;
         c.weightx = 0.1;
         c.weighty = 0.7;
+        c.insets = new Insets(0, 0, 0, 0);
         this.add(m_yearPanel, c);
         
         c.gridx = 0;
