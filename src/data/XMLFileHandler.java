@@ -1,20 +1,14 @@
 package data;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
+import java.io.*;
+import java.nio.charset.*;
 import java.nio.file.*;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
+import java.text.*;
+import java.util.*;
 import javafx.util.Pair;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
+import javax.xml.parsers.*;
+import org.xml.sax.*;
+import org.xml.sax.helpers.*;
 import model.Transaction;
 
 /**
@@ -30,6 +24,8 @@ public class XMLFileHandler {
     private final ArrayList<Pair<String, Object>> m_content;
     private final ArrayList<Transaction> m_transactions;
     private boolean m_fatalError;
+    private final String m_metaData = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>";
+    private final SimpleDateFormat m_dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
     // Constructor -------------------------------------------------------------
     public XMLFileHandler(String filename) {
@@ -39,9 +35,7 @@ public class XMLFileHandler {
         m_filename = filename;
         m_filesLocation = System.getenv("APPDATA") + "\\GhostApps\\BoekhoudingXML\\";
 
-        if (fileExists()) {
-            readFile();
-        } else {
+        if (!fileExists()) {
             createFile();
         }
     }
@@ -89,7 +83,7 @@ public class XMLFileHandler {
         if (f.exists() && !f.isDirectory()) {
         } else {
             ArrayList<String> lines = new ArrayList();
-            lines.add("<?xml version=\"1.0\"?>");
+            lines.add(m_metaData);
             lines.add("<data>\n</data>");
             writeToFile(lines);
         }
@@ -183,6 +177,84 @@ public class XMLFileHandler {
     }
 
     /**
+     * Parse an element of an XML-structure to a string and add it to the list
+     * of strings.
+     *
+     * @param e
+     */
+    private void parseXMLToString(XElement e) {
+        // TODO
+    }
+
+    /**
+     * Parse a list of transactions to an XML structure.
+     *
+     * @param list
+     * @return
+     */
+    private XElement parseTransactionsToXML(ArrayList<Transaction> list) {
+        XElement root = new XElement("data");
+        for (Transaction t : list) {
+            root.addChild(parseTransactionToXML(t));
+        }
+        return root;
+    }
+
+    /**
+     * Parse a single transaction to an XML structure.
+     *
+     * @param t
+     * @return
+     */
+    private XElement parseTransactionToXML(Transaction t) {
+        XElement e = new XElement("transaction");
+        e.addChild(new XElement("ID", objectToString(t.getID())));
+        e.addChild(new XElement("description", objectToString(t.getDescription())));
+        e.addChild(new XElement("price", objectToString(t.getPrice())));
+        e.addChild(new XElement("category", objectToString(t.getCategory())));
+        e.addChild(new XElement("transactor", objectToString(t.getTransactor())));
+        e.addChild(new XElement("transactorCategory", objectToString(t.getTransactorCategory())));
+        e.addChild(new XElement("dateAdded", objectToString(t.getDateAdded())));
+        if (t.getDatePaid() != null) {
+            e.addChild(new XElement("datePaid", objectToString(t.getDatePaid())));
+        }
+        e.addChild(new XElement("paymentMethod", objectToString(t.getPaymentMethod())));
+        e.addChild(new XElement("paymentMethodCategory", objectToString(t.getPaymentMethodCategory())));
+        if (t.isExceptional()) {
+            e.addChild(new XElement("exceptional", objectToString(t.isExceptional())));
+        }
+        if (t.needsPayback()) {
+            e.addChild(new XElement("payback", objectToString(t.needsPayback())));
+            e.addChild(new XElement("paybackTransactor", objectToString(t.getPaybackTransactor())));
+            e.addChild(new XElement("paybackTransactorCategory", objectToString(t.getPaybackTransactorCategory())));
+        }
+        if (t.isJob()) {
+            e.addChild(new XElement("isJob", objectToString(t.isJob())));
+            e.addChild(new XElement("jobHours", objectToString(t.getJobHours())));
+            e.addChild(new XElement("jobWage", objectToString(t.getJobWage())));
+            e.addChild(new XElement("jobDate", objectToString(t.getJobDate())));
+            e.addChild(new XElement("jobEmployer", objectToString(t.getJobEmployer())));
+        }
+        return e;
+    }
+
+    /**
+     * Converts any object to a string.
+     *
+     * @param o
+     * @return
+     */
+    private String objectToString(Object o) {
+        if (o.getClass().equals(String.class)) {
+            return (String) o;
+        } else if (o.getClass().equals(Date.class)) {
+            return dateToString((Date) o);
+        } else {
+            return String.valueOf(o);
+        }
+    }
+
+    /**
      * Parse a string to a date. If this fails, the function returns a new date
      * object.
      *
@@ -190,9 +262,8 @@ public class XMLFileHandler {
      * @return
      */
     private Date stringToDate(String s) {
-        SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
         try {
-            return df.parse(s);
+            return m_dateFormat.parse(s);
         } catch (ParseException ex) {
             System.out.println(ex.getMessage());
             m_fatalError = true;
@@ -201,13 +272,13 @@ public class XMLFileHandler {
     }
 
     /**
-     * Parse an element of an XML-structure to a string and add it to the list
-     * of strings.
+     * Parse a date to a string.
      *
-     * @param e
+     * @param d
+     * @return
      */
-    private void parseXMLToString(XElement e) {
-        // TODO
+    private String dateToString(Date d) {
+        return m_dateFormat.format(d);
     }
 
     // Public functions --------------------------------------------------------
@@ -222,8 +293,8 @@ public class XMLFileHandler {
     }
 
     /**
-     * Get a list of all the transactions in the file. If the file has no
-     * transactions, this list will be empty.
+     * Get a list of loaded transactions. If the file has no transactions, this
+     * list will be empty.
      *
      * @return
      */
@@ -238,6 +309,28 @@ public class XMLFileHandler {
      */
     public boolean success() {
         return !m_fatalError;
+    }
+
+    /**
+     * Get a list of transactions from the file.
+     */
+    public void loadTransactions() {
+        readFile();
+    }
+
+    /**
+     * Save a list of transactions to the file.
+     *
+     * @param list
+     */
+    public void saveTransactions(ArrayList<Transaction> list) {
+        ArrayList<String> result = new ArrayList();
+        result.add(m_metaData);
+        String xml = parseTransactionsToXML(list).toString();
+        for (String s : xml.split("\n")) {
+            result.add(s);
+        }
+        writeToFile(result);
     }
 
     // Private classes ---------------------------------------------------------
@@ -288,6 +381,12 @@ public class XMLFileHandler {
 
         public XElement(String name) {
             m_name = name;
+            m_children = new ArrayList();
+        }
+
+        public XElement(String name, String value) {
+            m_name = name;
+            m_value = value;
             m_children = new ArrayList();
         }
 

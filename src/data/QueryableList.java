@@ -13,11 +13,11 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
 
     // Members & constructors --------------------------------------------------
     private final ArrayList<Transaction> m_list;
-    
+
     public QueryableList() {
         m_list = new ArrayList();
     }
-    
+
     public QueryableList(ArrayList<Transaction> list) {
         m_list = list;
         for (Transaction t : m_list) {
@@ -44,17 +44,17 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
     public void addAsObserver(Observer o) {
         this.addObserver(o);
     }
-    
+
     public void add(Transaction t) {
         m_list.add(t);
         t.addAsObserver(this);
         notifyObserversOfChange();
     }
-    
+
     public Transaction get(int index) {
         return m_list.get(index);
     }
-    
+
     public Transaction get(long id) {
         for (Transaction t : m_list) {
             if (t.getID() == id) {
@@ -80,7 +80,7 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
         // increment
         return ++id;
     }
-    
+
     @Override
     public Iterator<Transaction> iterator() {
         return m_list.iterator();
@@ -126,7 +126,7 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
         }
         return q;
     }
-    
+
     public QueryableList selectDatePaidByMonth(int month) {
         QueryableList q = new QueryableList();
         Calendar cal = Calendar.getInstance();
@@ -219,5 +219,28 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
             total += t.getPrice();
         }
         return total;
+    }
+
+    /**
+     * Sort this list according to date paid.
+     *
+     * @return the same list, but sorted.
+     */
+    public QueryableList sortByDatePaid() {
+        Collections.sort(m_list, new Comparator<Transaction>() {
+            @Override
+            public int compare(Transaction o1, Transaction o2) {
+                if (o1.getDatePaid() != null && o2.getDatePaid() != null) {
+                    return o1.getDatePaid().compareTo(o2.getDatePaid());
+                } else if (o1.getDatePaid() != null) {
+                    return -1;
+                } else if (o2.getDatePaid() != null) {
+                    return 1;
+                } else {
+                    return 1;
+                }
+            }
+        });
+        return this;
     }
 }

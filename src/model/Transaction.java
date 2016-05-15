@@ -1,8 +1,6 @@
 package model;
 
-import java.util.Date;
-import java.util.Observable;
-import java.util.Observer;
+import java.util.*;
 
 /**
  * Class that represents a transaction in the application.

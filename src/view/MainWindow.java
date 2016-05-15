@@ -195,8 +195,12 @@ public class MainWindow extends JFrame {
 
         @Override
         public boolean dispatchKeyEvent(KeyEvent e) {
-            if ((e.getID() == KeyEvent.KEY_PRESSED) && (e.getKeyCode() == KeyEvent.VK_S) && ((e.getModifiers() & KeyEvent.CTRL_MASK) != 0)) {
-                data.Data.GetInstance().saveData();
+            if (e.getID() == KeyEvent.KEY_PRESSED) {
+                if ((e.getKeyCode() == KeyEvent.VK_S) && ((e.getModifiers() & KeyEvent.CTRL_MASK) != 0)) {
+                    data.Data.GetInstance().saveData();
+                } else if ((e.getKeyCode() == KeyEvent.VK_F4) && ((e.getModifiers() & KeyEvent.ALT_MASK) != 0)) {
+                    // TODO: auto save
+                }
             }
             return false;
         }

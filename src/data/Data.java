@@ -31,6 +31,7 @@ public class Data extends Observable implements Observer {
         m_dataHasChanged = false;
 
         XMLFileHandler xfh = new XMLFileHandler("data.xml");
+        xfh.loadTransactions();
         if (!xfh.success()) {
             m_loadingDataSucceeded = false;
         } else {
@@ -91,8 +92,13 @@ public class Data extends Observable implements Observer {
      * Saves the data to the XML file.
      */
     public void saveData() {
-
-        m_dataHasChanged = false;
+        XMLFileHandler xfh = new XMLFileHandler("data.xml");
+        if (!xfh.success()) {
+            m_dataHasChanged = true;
+        } else {
+            xfh.saveTransactions(m_transactions.sortByDatePaid().toList());
+            m_dataHasChanged = false;
+        }
         notifyObserversOfChange();
     }
 
