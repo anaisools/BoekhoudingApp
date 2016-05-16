@@ -233,7 +233,6 @@ public class XMLFileHandler {
             e.addChild(new XElement("jobHours", objectToString(t.getJobHours())));
             e.addChild(new XElement("jobWage", objectToString(t.getJobWage())));
             e.addChild(new XElement("jobDate", objectToString(t.getJobDate())));
-            e.addChild(new XElement("jobEmployer", objectToString(t.getJobEmployer())));
         }
         return e;
     }

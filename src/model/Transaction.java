@@ -34,7 +34,6 @@ public class Transaction extends Observable {
     private double m_jobHours;
     private double m_jobWage;
     private Date m_jobDate;
-    private String m_employer;
 
     public Transaction(long id) {
         m_id = id;
@@ -138,10 +137,6 @@ public class Transaction extends Observable {
         return m_jobDate;
     }
 
-    public String getJobEmployer() {
-        return m_employer;
-    }
-
     // Setters -----------------------------------------------------------------
     public void setDescription(String description) {
         m_description = description;
@@ -219,11 +214,4 @@ public class Transaction extends Observable {
         m_jobDate = jobDate;
         notifyObserversOfChange();
     }
-
-    public void setJobEmployer(String jobEmployer) {
-        setJob(true);
-        m_employer = jobEmployer;
-        notifyObserversOfChange();
-    }
-
 }
