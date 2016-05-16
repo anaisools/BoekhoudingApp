@@ -18,8 +18,8 @@ public class TableCellComparator implements Comparator {
         } else if (a.getClass().equals(Date.class)) {
             return ((Date) a).compareTo((Date) b);
         } else {
-            return a.toString().compareTo(b.toString());
+            return a.toString().toLowerCase().compareTo(b.toString().toLowerCase());
         }
     }
-    
+
 }

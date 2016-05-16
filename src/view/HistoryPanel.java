@@ -212,7 +212,7 @@ public class HistoryPanel extends JPanel implements Observer {
         // Update the table
         m_tablePanel.setData(m_displayedData.toList());
 
-        // TODO: Update the year-widget
+        // Update the year-widget
         m_yearPanel.setYear(m_year);
         QueryableList yearData = m_displayedData;
         if (m_yearPanel.hidingExceptional()) {

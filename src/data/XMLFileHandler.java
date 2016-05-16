@@ -246,7 +246,7 @@ public class XMLFileHandler {
      */
     private String objectToString(Object o) {
         if (o.getClass().equals(String.class)) {
-            return (String) o;
+            return ((String) o).replace("&", "&amp;");
         } else if (o.getClass().equals(Date.class)) {
             return dateToString((Date) o);
         } else {
@@ -338,6 +338,8 @@ public class XMLFileHandler {
 
         private XElement m_root;
         private XElement m_current;
+        private String m_value;
+        private boolean m_elementHasEnded;
 
         @Override
         public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
@@ -349,10 +351,16 @@ public class XMLFileHandler {
                 m_current.addChild(e);
                 m_current = e;
             }
+            m_elementHasEnded = false;
+            m_value = "";
         }
 
         @Override
         public void endElement(String uri, String localName, String qName) throws SAXException {
+            m_elementHasEnded = true;
+            if (!"".equals(m_value) && !"\n".equals(m_value)) {
+                m_current.setValue(m_value);
+            }
             if (!m_current.equals(m_root)) {
                 m_current = m_current.getParent();
             }
@@ -361,9 +369,9 @@ public class XMLFileHandler {
         @Override
         public void characters(char ch[], int start, int length) throws SAXException {
             String value = new String(ch, start, length);
-            value = value.trim();
-            if (!"".equals(value) && !"\n".equals(value)) {
-                m_current.setValue(value);
+            //value = value.trim();
+            if (!m_elementHasEnded && !"".equals(value) && !"\n".equals(value)) {
+                m_value += value;
             }
         }
 
