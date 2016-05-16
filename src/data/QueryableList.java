@@ -243,4 +243,19 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
         });
         return this;
     }
+
+    /**
+     * Select all transactions that are not exceptional.
+     *
+     * @return
+     */
+    public QueryableList selectUnexceptional() {
+        QueryableList q = new QueryableList();
+        for (Transaction t : this) {
+            if (!t.isExceptional()) {
+                q.add(t);
+            }
+        }
+        return q;
+    }
 }

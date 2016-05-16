@@ -2,11 +2,14 @@ package view.subpanels;
 
 import data.QueryableList;
 import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.text.*;
 import java.util.*;
 import javafx.util.Pair;
 import javax.swing.*;
 import javax.swing.table.*;
+import view.HistoryPanel;
 import view.swingextensions.*;
 
 /**
@@ -21,23 +24,27 @@ public class OverviewPanel extends JPanel {
 
     private QueryableList m_data;
     private int m_year;
+    private final HistoryPanel m_parent;
 
     private JLabel m_title;
     private SmallTable<String, Double> m_yearTable;
     private SmallTable<Date, Double> m_monthTable;
     private SmallTable<String, Double> m_monthAvgTable;
+    private JCheckBox m_hideExceptional;
 
     // Constructors ------------------------------------------------------------
-    public OverviewPanel() {
+    public OverviewPanel(HistoryPanel parent) {
         m_data = null;
+        m_parent = parent;
         createComponents();
         setPreferences();
         setActions();
         createUI();
     }
 
-    public OverviewPanel(QueryableList data) {
+    public OverviewPanel(HistoryPanel parent, QueryableList data) {
         m_data = data;
+        m_parent = parent;
         createComponents();
         setPreferences();
         setActions();
@@ -80,6 +87,8 @@ public class OverviewPanel extends JPanel {
         // month average table
         m_monthAvgTable = new SmallTable("Avg/Month", "Total", false);
         m_monthAvgTable.add("Average", 0.0);
+
+        m_hideExceptional = new JCheckBox("Hide exceptional");
     }
 
     /**
@@ -94,7 +103,12 @@ public class OverviewPanel extends JPanel {
      * Set actions for members of the frame.
      */
     private void setActions() {
-
+        m_hideExceptional.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent ie) {
+                m_parent.update(null, null);
+            }
+        });
     }
 
     /**
@@ -108,6 +122,7 @@ public class OverviewPanel extends JPanel {
         addWithGridBagConstraints(this, false, true, in, 0, 2, 1, 0, m_monthTable);
         addWithGridBagConstraints(this, false, true, in, 0, 3, 1, 0, m_monthAvgTable);
 
+        addWithGridBagConstraints(this, false, false, in, 0, 4, 0, 0, m_hideExceptional);
     }
 
     /**
@@ -185,6 +200,10 @@ public class OverviewPanel extends JPanel {
      */
     public void setYear(int year) {
         m_year = year;
+    }
+
+    public boolean hidingExceptional() {
+        return m_hideExceptional.isSelected();
     }
 
     // Private classes ---------------------------------------------------------

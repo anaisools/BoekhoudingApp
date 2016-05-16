@@ -31,19 +31,19 @@ public class HistoryPanel extends JPanel implements Observer {
     private JLabel m_yearLabel;
     private int m_year;
     private QueryableList m_displayedData;
-    
+
     private JButton m_previousYearButton;
     private JButton m_nextYearButton;
-    
+
     private JButton m_addButton;
     private JButton m_editButton;
-    
+
     public HistoryPanel(JFrame parentFrame) {
         m_parentFrame = parentFrame;
 
         // make sure view changes when data changes
         Data.GetInstance().addAsObserver(this);
-        
+
         createComponents();
         setPreferences();
         setActions();
@@ -78,7 +78,7 @@ public class HistoryPanel extends JPanel implements Observer {
         m_nextYearButton = new JButton(">");
 
         // year panel
-        m_yearPanel = new OverviewPanel();
+        m_yearPanel = new OverviewPanel(this);
 
         // button panel
         m_buttonPanel = new JPanel();
@@ -153,7 +153,7 @@ public class HistoryPanel extends JPanel implements Observer {
         // set general UI
         this.setLayout(new GridBagLayout());
         c = new GridBagConstraints();
-        
+
         c.fill = GridBagConstraints.BOTH;
         c.gridx = 0;
         c.gridy = 0;
@@ -161,7 +161,7 @@ public class HistoryPanel extends JPanel implements Observer {
         c.weightx = 1.0;
         c.weighty = 0.1;
         this.add(m_topPanel, c);
-        
+
         c.gridx = 0;
         c.gridy = 1;
         c.gridwidth = 2;
@@ -169,7 +169,7 @@ public class HistoryPanel extends JPanel implements Observer {
         c.weighty = 0.7;
         c.insets = new Insets(0, 20, 0, 0);
         this.add(m_tablePanel, c);
-        
+
         c.gridx = 2;
         c.gridy = 1;
         c.gridwidth = 1;
@@ -177,7 +177,7 @@ public class HistoryPanel extends JPanel implements Observer {
         c.weighty = 0.7;
         c.insets = new Insets(0, 0, 0, 0);
         this.add(m_yearPanel, c);
-        
+
         c.gridx = 0;
         c.gridy = 2;
         c.gridwidth = 3;
@@ -214,6 +214,10 @@ public class HistoryPanel extends JPanel implements Observer {
 
         // TODO: Update the year-widget
         m_yearPanel.setYear(m_year);
-        m_yearPanel.setData(m_displayedData);
+        QueryableList yearData = m_displayedData;
+        if (m_yearPanel.hidingExceptional()) {
+            yearData = yearData.selectUnexceptional();
+        }
+        m_yearPanel.setData(yearData);
     }
 }

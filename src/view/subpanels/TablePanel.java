@@ -58,7 +58,7 @@ public class TablePanel extends JPanel {
      */
     private void createComponents() {
         m_table = new JTable(createTableFromData());
-        m_table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        //m_table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         m_table.removeColumn(m_table.getColumn("ID")); // hide ID column
         m_scrollPane = new JScrollPane(m_table);
         m_table.setFillsViewportHeight(true);
