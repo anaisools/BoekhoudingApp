@@ -8,6 +8,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.text.*;
 import model.Transaction;
+import view.swingextensions.*;
 
 /**
  * Dialog to add or edit a transaction.
@@ -37,6 +38,8 @@ public class AddEditTransaction extends JDialog {
 
     private ArrayList<Component[]> m_fieldsGeneral;
     private ArrayList<Component[]> m_fieldsLoans;
+
+    private final SimpleDateFormat m_dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
     // Constructors ------------------------------------------------------------
     public AddEditTransaction(JFrame parent) {
@@ -80,19 +83,23 @@ public class AddEditTransaction extends JDialog {
         String[] transactors = Data.GetInstance().getTransactions().getDistinctTransactors();
         String[] paymentMethods = Data.GetInstance().getTransactions().getDistinctPaymentMethods();
 
+        Date date = new Date();
+        String today = m_dateFormat.format(date);
+
         // text fields
         m_fieldsGeneral = new ArrayList();
-        m_fieldsGeneral.add(new Component[]{new JLabel("Description"), new JTextField()});
-        m_fieldsGeneral.add(new Component[]{new JLabel("Price (€)"), currencySpinner()});
+        m_fieldsGeneral.add(new Component[]{new JLabel("Description"), new ValidationTextField(false)});
+        m_fieldsGeneral.add(new Component[]{new JLabel("Price"), currencySpinner()});
         m_fieldsGeneral.add(new Component[]{new JLabel("Category"), editableCombobox(categories)});
         m_fieldsGeneral.add(new Component[]{new JLabel("Transactor"), editableValidationCombobox(transactors)});
-        m_fieldsGeneral.add(new Component[]{new JLabel("Date added"), dateTextfield(true)});
-        m_fieldsGeneral.add(new Component[]{new JLabel("Date paid"), dateTextfield(true)});
+        m_fieldsGeneral.add(new Component[]{new JLabel("Date added"), new DateTextField(false, today)});
+        m_fieldsGeneral.add(new Component[]{new JLabel("Date paid"), new DateTextField(true, today)});
         m_fieldsGeneral.add(new Component[]{new JLabel("Payment method"), editableCombobox(paymentMethods)});
+
         m_fieldsLoans = new ArrayList();
         m_fieldsLoans.add(new Component[]{new JLabel("Needs to be paid back"), new JTextField()});
         m_fieldsLoans.add(new Component[]{new JLabel("Pay back transactor"), editableCombobox(transactors)});
-        m_fieldsLoans.add(new Component[]{new JLabel("Date paid back"), dateTextfield(false)});
+        m_fieldsLoans.add(new Component[]{new JLabel("Date paid back"), new DateTextField(true)});
 
     }
 
@@ -200,14 +207,13 @@ public class AddEditTransaction extends JDialog {
         if (m_transaction == null) {
             m_transaction = new Transaction(Data.GetInstance().getTransactions().getNewID());
         }
-        SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
         String[] split;
         for (Component[] c : m_fieldsGeneral) {
             switch (((JLabel) c[0]).getText()) {
                 case "Description":
                     m_transaction.setDescription(((JTextField) c[1]).getText());
                     break;
-                case "Price (€)":
+                case "Price":
                     m_transaction.setPrice((Double) (((JSpinner) c[1]).getValue()));
                     break;
                 case "Category":
@@ -219,14 +225,14 @@ public class AddEditTransaction extends JDialog {
                     break;
                 case "Date added":
                     try {
-                        m_transaction.setDateAdded(df.parse(((JTextField) c[1]).getText()));
+                        m_transaction.setDateAdded(m_dateFormat.parse(((JTextField) c[1]).getText()));
                     } catch (ParseException ex) {
                         m_transaction.setDateAdded(null);
                     }
                     break;
                 case "Date paid":
                     try {
-                        m_transaction.setDatePaid(df.parse(((JTextField) c[1]).getText()));
+                        m_transaction.setDatePaid(m_dateFormat.parse(((JTextField) c[1]).getText()));
                     } catch (ParseException ex) {
                         m_transaction.setDatePaid(null);
                     }
@@ -246,14 +252,13 @@ public class AddEditTransaction extends JDialog {
         if (m_transaction == null) {
             return;
         }
-        SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
         String comb;
         for (Component[] c : m_fieldsGeneral) {
             switch (((JLabel) c[0]).getText()) {
                 case "Description":
                     ((JTextField) c[1]).setText(m_transaction.getDescription());
                     break;
-                case "Price (€)":
+                case "Price":
                     ((JSpinner) c[1]).setValue(m_transaction.getPrice());
                     break;
                 case "Category":
@@ -265,12 +270,12 @@ public class AddEditTransaction extends JDialog {
                     break;
                 case "Date added":
                     if (m_transaction.getDateAdded() != null) {
-                        ((JTextField) c[1]).setText(df.format(m_transaction.getDateAdded()));
+                        ((JTextField) c[1]).setText(m_dateFormat.format(m_transaction.getDateAdded()));
                     }
                     break;
                 case "Date paid":
                     if (m_transaction.getDatePaid() != null) {
-                        ((JTextField) c[1]).setText(df.format(m_transaction.getDatePaid()));
+                        ((JTextField) c[1]).setText(m_dateFormat.format(m_transaction.getDatePaid()));
                     }
                     break;
                 case "Payment method":
@@ -335,7 +340,7 @@ public class AddEditTransaction extends JDialog {
     private Component currencySpinner() {
         SpinnerNumberModel model = new SpinnerNumberModel(0.0, -1000000000.0, 1000000000.0, 0.5);
         JSpinner spinner = new JSpinner(model);
-        String pattern = "0.00";
+        String pattern = "€ 0.00";
         JSpinner.NumberEditor editor = new JSpinner.NumberEditor(spinner, pattern);
         DecimalFormat format = editor.getFormat();
         DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols(Locale.FRANCE);
@@ -369,9 +374,8 @@ public class AddEditTransaction extends JDialog {
      * @param today true if the text should be set to today.
      * @return
      */
-    private Component dateTextfield(boolean today) {
-        DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
-        JFormattedTextField ftf = new JFormattedTextField(df);
+    private Component dateTextfield(boolean today, boolean canBeEmpty) {
+        JFormattedTextField ftf = new JFormattedTextField(m_dateFormat);
         ftf.setColumns(10);
         try {
             MaskFormatter mf = new MaskFormatter("##/##/####");
@@ -382,7 +386,7 @@ public class AddEditTransaction extends JDialog {
         }
         if (today) {
             Date date = new Date();
-            ftf.setText(df.format(date));
+            ftf.setText(m_dateFormat.format(date));
         }
         return ftf;
     }
