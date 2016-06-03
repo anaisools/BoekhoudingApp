@@ -117,11 +117,6 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
                 if (cal.get(Calendar.YEAR) == year) {
                     q.add(t);
                 }
-            } else {
-                cal.setTime(t.getDateAdded());
-                if (cal.get(Calendar.YEAR) == year) {
-                    q.add(t);
-                }
             }
         }
         return q;
@@ -136,11 +131,18 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
                 if (cal.get(Calendar.MONTH) == month) {
                     q.add(t);
                 }
-            } else {
-                cal.setTime(t.getDateAdded());
-                if (cal.get(Calendar.MONTH) == month) {
-                    q.add(t);
-                }
+            }
+        }
+        return q;
+    }
+
+    public QueryableList selectDateAddedByMonth(int month) {
+        QueryableList q = new QueryableList();
+        Calendar cal = Calendar.getInstance();
+        for (Transaction t : this) {
+            cal.setTime(t.getDateAdded());
+            if (cal.get(Calendar.MONTH) == month) {
+                q.add(t);
             }
         }
         return q;

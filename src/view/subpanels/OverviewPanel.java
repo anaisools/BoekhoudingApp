@@ -31,6 +31,7 @@ public class OverviewPanel extends JPanel {
     private SmallTable<Date, Double> m_monthTable;
     private SmallTable<String, Double> m_monthAvgTable;
     private JCheckBox m_hideExceptional;
+    private JCheckBox m_useDateAdded;
 
     // Constructors ------------------------------------------------------------
     public OverviewPanel(HistoryPanel parent) {
@@ -89,6 +90,7 @@ public class OverviewPanel extends JPanel {
         m_monthAvgTable.add("Average", 0.0);
 
         m_hideExceptional = new JCheckBox("Hide exceptional");
+        m_useDateAdded = new JCheckBox("Use date added ");
     }
 
     /**
@@ -109,20 +111,27 @@ public class OverviewPanel extends JPanel {
                 m_parent.update(null, null);
             }
         });
+        m_useDateAdded.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent ie) {
+                m_parent.update(null, null);
+            }
+        });
     }
 
     /**
      * Add members to the frame, using layout managers.
      */
     private void createUI() {
-        Insets in = new Insets(20, 20, 20, 20);
+        Insets in = new Insets(20, 20, 20, 20); // top left bottom right
 
         addWithGridBagConstraints(this, false, true, in, 0, 0, 1, 0, m_title);
         addWithGridBagConstraints(this, false, true, in, 0, 1, 1, 0, m_yearTable);
         addWithGridBagConstraints(this, false, true, in, 0, 2, 1, 0, m_monthTable);
         addWithGridBagConstraints(this, false, true, in, 0, 3, 1, 0, m_monthAvgTable);
 
-        addWithGridBagConstraints(this, false, false, in, 0, 4, 0, 0, m_hideExceptional);
+        addWithGridBagConstraints(this, false, false, new Insets(20, 20, 5, 20), 0, 4, 0, 0, m_hideExceptional);
+        addWithGridBagConstraints(this, false, false, new Insets(5, 20, 20, 20), 0, 5, 0, 0, m_useDateAdded);
     }
 
     /**
@@ -136,7 +145,11 @@ public class OverviewPanel extends JPanel {
         // update month
         double[] months = new double[12];
         for (int i = 0; i < 12; i++) {
-            months[i] = m_data.selectDatePaidByMonth(i).getTotalPrice();
+            if (usingDateAdded()) {
+                months[i] = m_data.selectDateAddedByMonth(i).getTotalPrice();
+            } else {
+                months[i] = m_data.selectDatePaidByMonth(i).getTotalPrice();
+            }
             m_monthTable.editRightValue(i, months[i]);
         }
 
@@ -202,8 +215,22 @@ public class OverviewPanel extends JPanel {
         m_year = year;
     }
 
+    /**
+     * Check if the displayed data should display exceptional entries or not.
+     *
+     * @return
+     */
     public boolean hidingExceptional() {
         return m_hideExceptional.isSelected();
+    }
+
+    /**
+     * Check if the displayed data should display exceptional entries or not.
+     *
+     * @return
+     */
+    public boolean usingDateAdded() {
+        return m_useDateAdded.isSelected();
     }
 
     // Private classes ---------------------------------------------------------
