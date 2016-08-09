@@ -1,7 +1,10 @@
 package data;
 
 import java.util.*;
+import model.CategoryString;
+import model.CategoryStringComparator;
 import model.Transaction;
+import model.Transaction.TRANSACTIONFIELD;
 
 /**
  * Class extends a list of Transactions, adding functions to query Transactions.
@@ -112,8 +115,22 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
         QueryableList q = new QueryableList();
         Calendar cal = Calendar.getInstance();
         for (Transaction t : this) {
-            if (t.getDatePaid() != null) {
-                cal.setTime(t.getDatePaid());
+            if (t.get(TRANSACTIONFIELD.DATEPAID) != null) {
+                cal.setTime((Date) t.get(TRANSACTIONFIELD.DATEPAID));
+                if (cal.get(Calendar.YEAR) == year) {
+                    q.add(t);
+                }
+            }
+        }
+        return q;
+    }
+
+    public QueryableList selectDateAddedByYear(int year) {
+        QueryableList q = new QueryableList();
+        Calendar cal = Calendar.getInstance();
+        for (Transaction t : this) {
+            if (t.get(TRANSACTIONFIELD.DATEADDED) != null) {
+                cal.setTime((Date) t.get(TRANSACTIONFIELD.DATEADDED));
                 if (cal.get(Calendar.YEAR) == year) {
                     q.add(t);
                 }
@@ -126,8 +143,8 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
         QueryableList q = new QueryableList();
         Calendar cal = Calendar.getInstance();
         for (Transaction t : this) {
-            if (t.getDatePaid() != null) {
-                cal.setTime(t.getDatePaid());
+            if (t.get(TRANSACTIONFIELD.DATEPAID) != null) {
+                cal.setTime((Date) t.get(TRANSACTIONFIELD.DATEPAID));
                 if (cal.get(Calendar.MONTH) == month) {
                     q.add(t);
                 }
@@ -140,7 +157,7 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
         QueryableList q = new QueryableList();
         Calendar cal = Calendar.getInstance();
         for (Transaction t : this) {
-            cal.setTime(t.getDateAdded());
+            cal.setTime((Date) t.get(TRANSACTIONFIELD.DATEADDED));
             if (cal.get(Calendar.MONTH) == month) {
                 q.add(t);
             }
@@ -149,17 +166,16 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
     }
 
     /**
-     * Get all distinct values of the categories field. An empty string is
-     * added.
+     * Get all distinct values of the categories field.
      *
      * @return an array with all the distinct categories
      */
     public String[] getDistinctCategories() {
         ArrayList<String> list = new ArrayList();
-        list.add("");
         for (Transaction t : this) {
-            if (!list.contains(t.getCategory())) {
-                list.add(t.getCategory());
+            String element = (String) t.get(TRANSACTIONFIELD.CATEGORY);
+            if (!list.contains(element)) {
+                list.add(element);
             }
         }
         Collections.sort(list);
@@ -167,47 +183,43 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
     }
 
     /**
-     * Get all distinct values of the transactors field. An empty string is
-     * added.
+     * Get all distinct values of the transactors field.
      *
      * @return an array with all the distinct transactors
      */
-    public String[] getDistinctTransactors() {
-        ArrayList<String> list = new ArrayList();
-        list.add("");
+    public CategoryString[] getDistinctTransactors() {
+        ArrayList<CategoryString> list = new ArrayList();
         for (Transaction t : this) {
-            String element = t.getTransactorCategory() + " > " + t.getTransactor();
+            CategoryString element = (CategoryString) t.get(TRANSACTIONFIELD.TRANSACTOR);
             if (!list.contains(element)) {
                 list.add(element);
             }
-            if (t.getPaybackTransactor() != null) {
-                element = t.getPaybackTransactorCategory() + " > " + t.getPaybackTransactor();
+            if (t.get(TRANSACTIONFIELD.PAYBACK_TRANSACTOR) != null) {
+                element = (CategoryString) t.get(TRANSACTIONFIELD.PAYBACK_TRANSACTOR);
                 if (!list.contains(element)) {
                     list.add(element);
                 }
             }
         }
-        Collections.sort(list);
-        return (String[]) list.toArray(new String[list.size()]);
+        Collections.sort(list, new CategoryStringComparator());
+        return (CategoryString[]) list.toArray(new CategoryString[list.size()]);
     }
 
     /**
-     * Get all distinct values of the payment methods field. An empty string is
-     * added.
+     * Get all distinct values of the payment methods field.
      *
      * @return an array with all the distinct payment methods
      */
-    public String[] getDistinctPaymentMethods() {
-        ArrayList<String> list = new ArrayList();
-        list.add("");
+    public CategoryString[] getDistinctPaymentMethods() {
+        ArrayList<CategoryString> list = new ArrayList();
         for (Transaction t : this) {
-            String element = t.getPaymentMethodCategory() + " > " + t.getPaymentMethod();
+            CategoryString element = (CategoryString) t.get(TRANSACTIONFIELD.PAYMENTMETHOD);
             if (!list.contains(element)) {
                 list.add(element);
             }
         }
-        Collections.sort(list);
-        return (String[]) list.toArray(new String[list.size()]);
+        Collections.sort(list, new CategoryStringComparator());
+        return (CategoryString[]) list.toArray(new CategoryString[list.size()]);
     }
 
     /**
@@ -218,7 +230,7 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
     public double getTotalPrice() {
         double total = 0.0;
         for (Transaction t : this) {
-            total += t.getPrice();
+            total += (double) t.get(TRANSACTIONFIELD.PRICE);
         }
         return total;
     }
@@ -232,11 +244,11 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
         Collections.sort(m_list, new Comparator<Transaction>() {
             @Override
             public int compare(Transaction o1, Transaction o2) {
-                if (o1.getDatePaid() != null && o2.getDatePaid() != null) {
-                    return o1.getDatePaid().compareTo(o2.getDatePaid());
-                } else if (o1.getDatePaid() != null) {
+                if (o1.get(TRANSACTIONFIELD.DATEPAID) != null && o2.get(TRANSACTIONFIELD.DATEPAID) != null) {
+                    return ((Date) o1.get(TRANSACTIONFIELD.DATEPAID)).compareTo((Date) o2.get(TRANSACTIONFIELD.DATEPAID));
+                } else if (o1.get(TRANSACTIONFIELD.DATEPAID) != null) {
                     return -1;
-                } else if (o2.getDatePaid() != null) {
+                } else if (o2.get(TRANSACTIONFIELD.DATEPAID) != null) {
                     return 1;
                 } else {
                     return 1;

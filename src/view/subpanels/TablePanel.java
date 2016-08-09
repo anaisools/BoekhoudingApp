@@ -7,6 +7,7 @@ import javafx.util.Pair;
 import javax.swing.*;
 import javax.swing.table.*;
 import model.Transaction;
+import model.Transaction.TRANSACTIONFIELD;
 import view.swingextensions.*;
 
 /**
@@ -21,18 +22,13 @@ import view.swingextensions.*;
 public class TablePanel extends JPanel {
 
     private ArrayList<Transaction> m_data;
-    private final ArrayList<Pair<String, COLUMNTYPE>> m_columns;
+    private final ArrayList<Pair<String, TRANSACTIONFIELD>> m_columns;
 
     private JTable m_table;
     private JScrollPane m_scrollPane;
 
-    public enum COLUMNTYPE {
-
-        DESCRIPTION, PRICE, CATEGORY, TRANSACTOR, DATEADDED, DATEPAID, PAYMENTMETHOD, EXCEPTIONAL
-    };
-
     // Constructors ------------------------------------------------------------
-    public TablePanel(ArrayList<Pair<String, COLUMNTYPE>> columns) {
+    public TablePanel(ArrayList<Pair<String, TRANSACTIONFIELD>> columns) {
         m_data = new ArrayList();
         m_columns = columns;
 
@@ -42,7 +38,7 @@ public class TablePanel extends JPanel {
         createUI();
     }
 
-    public TablePanel(ArrayList<Transaction> data, ArrayList<Pair<String, COLUMNTYPE>> columns) {
+    public TablePanel(ArrayList<Transaction> data, ArrayList<Pair<String, TRANSACTIONFIELD>> columns) {
         m_data = data;
         m_columns = columns;
 
@@ -76,7 +72,7 @@ public class TablePanel extends JPanel {
      */
     private void setPreferences() {
         m_table.setDefaultRenderer(Object.class, new PaddingTableCellRenderer());
-        for (Pair<String, COLUMNTYPE> p : m_columns) {
+        for (Pair<String, TRANSACTIONFIELD> p : m_columns) {
             switch (p.getValue()) {
                 case DESCRIPTION:
                     getColumn(p.getKey()).setPreferredWidth(250);
@@ -166,32 +162,13 @@ public class TablePanel extends JPanel {
         for (Transaction t : m_data) {
             ArrayList<Object> dataObject = new ArrayList();
             dataObject.add(t.getID());
-            for (Pair<String, COLUMNTYPE> p : m_columns) {
-                switch (p.getValue()) {
-                    case DESCRIPTION:
-                        dataObject.add(t.getDescription());
-                        break;
-                    case PRICE:
-                        dataObject.add(t.getPrice());
-                        break;
-                    case CATEGORY:
-                        dataObject.add(t.getCategory());
-                        break;
-                    case TRANSACTOR:
-                        dataObject.add(t.getTransactor());
-                        break;
-                    case DATEADDED:
-                        dataObject.add(t.getDateAdded());
-                        break;
-                    case DATEPAID:
-                        dataObject.add(t.getDatePaid());
-                        break;
-                    case PAYMENTMETHOD:
-                        dataObject.add(t.getPaymentMethod());
-                        break;
-                    case EXCEPTIONAL:
-                        dataObject.add(t.isExceptional());
-                        break;
+            for (Pair<String, TRANSACTIONFIELD> p : m_columns) {
+                TRANSACTIONFIELD fieldType = p.getValue();
+                Object field = t.get(fieldType);
+                if (field != null && field.getClass().equals(model.CategoryString.class)) {
+                    dataObject.add(((model.CategoryString) field).getValue());
+                } else {
+                    dataObject.add(field);
                 }
             }
             tm.addRow(dataObject.toArray());

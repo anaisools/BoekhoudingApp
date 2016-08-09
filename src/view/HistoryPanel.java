@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.util.*;
 import javafx.util.Pair;
 import javax.swing.*;
+import model.Transaction.TRANSACTIONFIELD;
 import view.subpanels.*;
 
 /**
@@ -60,15 +61,15 @@ public class HistoryPanel extends JPanel implements Observer {
      */
     private void createComponents() {
         // table panel
-        ArrayList<Pair<String, TablePanel.COLUMNTYPE>> columns = new ArrayList();
-        columns.add(new Pair("Description", TablePanel.COLUMNTYPE.DESCRIPTION));
-        columns.add(new Pair("Price", TablePanel.COLUMNTYPE.PRICE));
-        columns.add(new Pair("Category", TablePanel.COLUMNTYPE.CATEGORY));
-        columns.add(new Pair("Transactor", TablePanel.COLUMNTYPE.TRANSACTOR));
-        columns.add(new Pair("Date added", TablePanel.COLUMNTYPE.DATEADDED));
-        columns.add(new Pair("Date paid", TablePanel.COLUMNTYPE.DATEPAID));
-        columns.add(new Pair("Payment method", TablePanel.COLUMNTYPE.PAYMENTMETHOD));
-        columns.add(new Pair("Exceptional", TablePanel.COLUMNTYPE.EXCEPTIONAL));
+        ArrayList<Pair<String, TRANSACTIONFIELD>> columns = new ArrayList();
+        columns.add(new Pair("Description", TRANSACTIONFIELD.DESCRIPTION));
+        columns.add(new Pair("Price", TRANSACTIONFIELD.PRICE));
+        columns.add(new Pair("Category", TRANSACTIONFIELD.CATEGORY));
+        columns.add(new Pair("Transactor", TRANSACTIONFIELD.TRANSACTOR));
+        columns.add(new Pair("Date added", TRANSACTIONFIELD.DATEADDED));
+        columns.add(new Pair("Date paid", TRANSACTIONFIELD.DATEPAID));
+        columns.add(new Pair("Payment method", TRANSACTIONFIELD.PAYMENTMETHOD));
+        columns.add(new Pair("Exceptional", TRANSACTIONFIELD.EXCEPTIONAL));
         m_tablePanel = new TablePanel(columns);
 
         // top panel
@@ -207,8 +208,11 @@ public class HistoryPanel extends JPanel implements Observer {
      */
     @Override
     public void update(Observable o, Object o1) {
-        m_displayedData = Data.GetInstance().getTransactions().selectDatePaidByYear(m_year);
-
+        if (m_yearPanel.usingDateAdded()) {
+            m_displayedData = Data.GetInstance().getTransactions().selectDateAddedByYear(m_year);
+        } else {
+            m_displayedData = Data.GetInstance().getTransactions().selectDatePaidByYear(m_year);
+        }
         // Update the table
         m_tablePanel.setData(m_displayedData.toList());
 

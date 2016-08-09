@@ -1,9 +1,7 @@
 package view;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.util.Observable;
 import java.util.Observer;
@@ -116,7 +114,39 @@ public class MainWindow extends JFrame {
      * Set actions for members of the frame.
      */
     private void setActions() {
+        this.addWindowListener(new WindowListener() {
 
+            @Override
+            public void windowOpened(WindowEvent we) {
+            }
+
+            @Override
+            public void windowClosing(WindowEvent we) {
+                // TODO: only do this when autosave is on
+                data.Data.GetInstance().saveData();
+            }
+
+            @Override
+            public void windowClosed(WindowEvent we) {
+            }
+
+            @Override
+            public void windowIconified(WindowEvent we) {
+            }
+
+            @Override
+            public void windowDeiconified(WindowEvent we) {
+            }
+
+            @Override
+            public void windowActivated(WindowEvent we) {
+            }
+
+            @Override
+            public void windowDeactivated(WindowEvent we) {
+            }
+
+        });
     }
 
     /**

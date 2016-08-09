@@ -33,7 +33,7 @@ public class XMLFileHandler {
         m_content = new ArrayList();
         m_transactions = new ArrayList();
         m_filename = filename;
-        m_filesLocation = System.getenv("APPDATA") + "\\GhostApps\\BoekhoudingXML\\";
+        m_filesLocation = System.getenv("APPDATA") + "\\GhostApps\\BoekhoudingApp\\";
 
         if (!fileExists()) {
             createFile();
@@ -212,21 +212,21 @@ public class XMLFileHandler {
         e.addChild(new XElement("description", objectToString(t.getDescription())));
         e.addChild(new XElement("price", objectToString(t.getPrice())));
         e.addChild(new XElement("category", objectToString(t.getCategory())));
-        e.addChild(new XElement("transactor", objectToString(t.getTransactor())));
-        e.addChild(new XElement("transactorCategory", objectToString(t.getTransactorCategory())));
+        e.addChild(new XElement("transactor", objectToString(t.getTransactor().getValue())));
+        e.addChild(new XElement("transactorCategory", objectToString(t.getTransactor().getCategory())));
         e.addChild(new XElement("dateAdded", objectToString(t.getDateAdded())));
         if (t.getDatePaid() != null) {
             e.addChild(new XElement("datePaid", objectToString(t.getDatePaid())));
         }
-        e.addChild(new XElement("paymentMethod", objectToString(t.getPaymentMethod())));
-        e.addChild(new XElement("paymentMethodCategory", objectToString(t.getPaymentMethodCategory())));
+        e.addChild(new XElement("paymentMethod", objectToString(t.getPaymentMethod().getValue())));
+        e.addChild(new XElement("paymentMethodCategory", objectToString(t.getPaymentMethod().getCategory())));
         if (t.isExceptional()) {
             e.addChild(new XElement("exceptional", objectToString(t.isExceptional())));
         }
         if (t.needsPayback()) {
             e.addChild(new XElement("payback", objectToString(t.needsPayback())));
-            e.addChild(new XElement("paybackTransactor", objectToString(t.getPaybackTransactor())));
-            e.addChild(new XElement("paybackTransactorCategory", objectToString(t.getPaybackTransactorCategory())));
+            e.addChild(new XElement("paybackTransactor", objectToString(t.getPaybackTransactor().getValue())));
+            e.addChild(new XElement("paybackTransactorCategory", objectToString(t.getPaybackTransactor().getCategory())));
         }
         if (t.isJob()) {
             e.addChild(new XElement("isJob", objectToString(t.isJob())));
