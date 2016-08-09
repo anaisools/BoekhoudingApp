@@ -5,9 +5,11 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.text.*;
 import java.util.*;
+import javafx.util.Pair;
 import javax.swing.*;
-import javax.swing.text.*;
+import model.CategoryString;
 import model.Transaction;
+import model.Transaction.TRANSACTIONFIELD;
 import view.swingextensions.*;
 
 /**
@@ -36,10 +38,8 @@ public class AddEditTransaction extends JDialog {
     private JButton m_approveButton;
     private JButton m_disapproveButton;
 
-    private ArrayList<Component[]> m_fieldsGeneral;
-    private ArrayList<Component[]> m_fieldsLoans;
-
-    private final SimpleDateFormat m_dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+    private ArrayList<Pair<TRANSACTIONFIELD, ValidationComponent>> m_fieldsGeneral;
+    private ArrayList<Pair<TRANSACTIONFIELD, ValidationComponent>> m_fieldsLoans;
 
     // Constructors ------------------------------------------------------------
     public AddEditTransaction(JFrame parent) {
@@ -80,27 +80,25 @@ public class AddEditTransaction extends JDialog {
 
         // create text values for dropdowns
         String[] categories = Data.GetInstance().getTransactions().getDistinctCategories();
-        String[] transactors = Data.GetInstance().getTransactions().getDistinctTransactors();
-        String[] paymentMethods = Data.GetInstance().getTransactions().getDistinctPaymentMethods();
+        String[] transactors = categoryStringArrayToStringArray(Data.GetInstance().getTransactions().getDistinctTransactors());
+        String[] paymentMethods = categoryStringArrayToStringArray(Data.GetInstance().getTransactions().getDistinctPaymentMethods());
 
-        Date date = new Date();
-        String today = m_dateFormat.format(date);
+        Date today = new Date();
 
         // text fields
         m_fieldsGeneral = new ArrayList();
-        m_fieldsGeneral.add(new Component[]{new JLabel("Description"), new ValidationTextField(false)});
-        m_fieldsGeneral.add(new Component[]{new JLabel("Price"), currencySpinner()});
-        m_fieldsGeneral.add(new Component[]{new JLabel("Category"), editableCombobox(categories)});
-        m_fieldsGeneral.add(new Component[]{new JLabel("Transactor"), editableValidationCombobox(transactors)});
-        m_fieldsGeneral.add(new Component[]{new JLabel("Date added"), new DateTextField(false, today)});
-        m_fieldsGeneral.add(new Component[]{new JLabel("Date paid"), new DateTextField(true, today)});
-        m_fieldsGeneral.add(new Component[]{new JLabel("Payment method"), editableCombobox(paymentMethods)});
+        m_fieldsGeneral.add(new Pair(TRANSACTIONFIELD.DESCRIPTION, new ValidationTextField(false, "Description", null)));
+        m_fieldsGeneral.add(new Pair(TRANSACTIONFIELD.PRICE, new ValidationCurrencyField()));
+        m_fieldsGeneral.add(new Pair(TRANSACTIONFIELD.CATEGORY, new ValidationComboBox(false, "Category", null, categories)));
+        m_fieldsGeneral.add(new Pair(TRANSACTIONFIELD.TRANSACTOR, new ValidationComboBox(false, "Transactor category > Transactor", " > ", transactors)));
+        m_fieldsGeneral.add(new Pair(TRANSACTIONFIELD.DATEADDED, new ValidationDateField(false, today, "Date added (dd/MM/yyyy)")));
+        m_fieldsGeneral.add(new Pair(TRANSACTIONFIELD.DATEPAID, new ValidationDateField(true, today, "Date paid (dd/MM/yyyy)")));
+        m_fieldsGeneral.add(new Pair(TRANSACTIONFIELD.PAYMENTMETHOD, new ValidationComboBox(false, "Payment method category > Payment method", " > ", paymentMethods)));
 
         m_fieldsLoans = new ArrayList();
-        m_fieldsLoans.add(new Component[]{new JLabel("Needs to be paid back"), new JTextField()});
-        m_fieldsLoans.add(new Component[]{new JLabel("Pay back transactor"), editableCombobox(transactors)});
-        m_fieldsLoans.add(new Component[]{new JLabel("Date paid back"), new DateTextField(true)});
-
+        //m_fieldsLoans.add(new Pair(TRANSACTIONFIELD.PAYBACK, new ValidationTextField(true, "REMOVE THIS", null)));
+        //m_fieldsLoans.add(new Pair(TRANSACTIONFIELD.PAYBACK_TRANSACTOR, new ValidationComboBox(true, "Transactorcategory > Transactor", " > ", transactors)));
+        //m_fieldsLoans.add(new Pair(TRANSACTIONFIELD.DATEPAID, new ValidationDateField(true, null, "Date paid back (dd/mm/yyyy)")));
     }
 
     /**
@@ -121,9 +119,11 @@ public class AddEditTransaction extends JDialog {
      */
     private void setActions() {
         m_approveButton.addActionListener((ActionEvent ae) -> {
-            generateTransaction();
-            m_approved = true;
-            this.dispose();
+            if (validateFields()) {
+                generateTransaction();
+                m_approved = true;
+                this.dispose();
+            }
         });
         m_disapproveButton.addActionListener((ActionEvent ae) -> {
             m_approved = false;
@@ -174,24 +174,20 @@ public class AddEditTransaction extends JDialog {
         JPanel general = new JPanel();
         general.setBorder(BorderFactory.createTitledBorder(" General "));
         for (int col = 0; col < m_fieldsGeneral.size(); col++) {
-            Component[] c = m_fieldsGeneral.get(col);
-            addWithGridBagConstraints(general, true, true, in, 0, col, 0, 0, c[0]);
-            c[0].setPreferredSize(new Dimension(140, 25));
-            for (int row = 1; row < c.length; row++) {
-                addWithGridBagConstraints(general, true, true, in, row, col, 1, 0, c[row]);
-            }
+            Pair<TRANSACTIONFIELD, ValidationComponent> c = m_fieldsGeneral.get(col);
+            //addWithGridBagConstraints(general, true, true, in, 0, col, 0, 0, c.getKey());
+            ((Component) c.getValue()).setPreferredSize(new Dimension(140, 25));
+            addWithGridBagConstraints(general, true, true, in, 0, col, 1, 0, (Component) c.getValue());
         }
 
         // loans
         JPanel loans = new JPanel();
         loans.setBorder(BorderFactory.createTitledBorder(" Loans "));
         for (int col = 0; col < m_fieldsLoans.size(); col++) {
-            Component[] c = m_fieldsLoans.get(col);
-            addWithGridBagConstraints(loans, true, true, in, 0, col, 0, 0, c[0]);
-            c[0].setPreferredSize(new Dimension(140, 25));
-            for (int row = 1; row < c.length; row++) {
-                addWithGridBagConstraints(loans, true, true, in, row, col, 1, 0, c[row]);
-            }
+            Pair<TRANSACTIONFIELD, ValidationComponent> c = m_fieldsLoans.get(col);
+            //addWithGridBagConstraints(loans, true, true, in, 0, col, 0, 0, c.getKey());
+            ((Component) c.getValue()).setPreferredSize(new Dimension(140, 25));
+            addWithGridBagConstraints(loans, true, true, in, 0, col, 1, 0, (Component) c.getValue());
         }
 
         // main panel
@@ -201,47 +197,41 @@ public class AddEditTransaction extends JDialog {
     }
 
     /**
+     * Validates all fields. If all fields have a valid value, the function
+     * returns true, otherwise false.
+     *
+     * @return true if all required fields are valid, false if not
+     */
+    private boolean validateFields() {
+        boolean allValid = true; // assume everything is valid
+
+        for (Pair<TRANSACTIONFIELD, ValidationComponent> p : m_fieldsGeneral) {
+            ValidationComponent c = p.getValue();
+            c.forceValidate();
+            if (!c.isValid()) {
+                allValid = false;
+            }
+        }
+
+        // if (isLoan) { check loan fields }
+        return allValid;
+    }
+
+    /**
      * Generate a transaction from the (validated) text fields.
      */
     private void generateTransaction() {
         if (m_transaction == null) {
             m_transaction = new Transaction(Data.GetInstance().getTransactions().getNewID());
         }
-        String[] split;
-        for (Component[] c : m_fieldsGeneral) {
-            switch (((JLabel) c[0]).getText()) {
-                case "Description":
-                    m_transaction.setDescription(((JTextField) c[1]).getText());
-                    break;
-                case "Price":
-                    m_transaction.setPrice((Double) (((JSpinner) c[1]).getValue()));
-                    break;
-                case "Category":
-                    m_transaction.setCategory((String) ((JComboBox) c[1]).getSelectedItem());
-                    break;
-                case "Transactor":
-                    split = ((String) ((JComboBox) c[1]).getSelectedItem()).split(" > ");
-                    m_transaction.setTransactor(split[1], split[0]);
-                    break;
-                case "Date added":
-                    try {
-                        m_transaction.setDateAdded(m_dateFormat.parse(((JTextField) c[1]).getText()));
-                    } catch (ParseException ex) {
-                        m_transaction.setDateAdded(null);
-                    }
-                    break;
-                case "Date paid":
-                    try {
-                        m_transaction.setDatePaid(m_dateFormat.parse(((JTextField) c[1]).getText()));
-                    } catch (ParseException ex) {
-                        m_transaction.setDatePaid(null);
-                    }
-                    break;
-                case "Payment method":
-                    split = ((String) ((JComboBox) c[1]).getSelectedItem()).split(" > ");
-                    m_transaction.setPaymentMethod(split[1], split[0]);
-                    break;
+        for (Pair<TRANSACTIONFIELD, ValidationComponent> c : m_fieldsGeneral) {
+            Object content = c.getValue().getValue();
+            TRANSACTIONFIELD field = c.getKey();
+            Class preferredClass = m_transaction.getFieldClass(field);
+            if (preferredClass.equals(CategoryString.class) && content.getClass().equals(String.class)) {
+                content = new CategoryString((String) content);
             }
+            m_transaction.set(c.getKey(), content);
         }
     }
 
@@ -252,38 +242,23 @@ public class AddEditTransaction extends JDialog {
         if (m_transaction == null) {
             return;
         }
-        String comb;
-        for (Component[] c : m_fieldsGeneral) {
-            switch (((JLabel) c[0]).getText()) {
-                case "Description":
-                    ((JTextField) c[1]).setText(m_transaction.getDescription());
-                    break;
-                case "Price":
-                    ((JSpinner) c[1]).setValue(m_transaction.getPrice());
-                    break;
-                case "Category":
-                    ((JComboBox) c[1]).setSelectedItem(m_transaction.getCategory());
-                    break;
-                case "Transactor":
-                    comb = m_transaction.getTransactorCategory() + " > " + m_transaction.getTransactor();
-                    ((JComboBox) c[1]).setSelectedItem(comb);
-                    break;
-                case "Date added":
-                    if (m_transaction.getDateAdded() != null) {
-                        ((JTextField) c[1]).setText(m_dateFormat.format(m_transaction.getDateAdded()));
-                    }
-                    break;
-                case "Date paid":
-                    if (m_transaction.getDatePaid() != null) {
-                        ((JTextField) c[1]).setText(m_dateFormat.format(m_transaction.getDatePaid()));
-                    }
-                    break;
-                case "Payment method":
-                    comb = m_transaction.getPaymentMethodCategory() + " > " + m_transaction.getPaymentMethod();
-                    ((JComboBox) c[1]).setSelectedItem(comb);
-                    break;
+        for (Pair<TRANSACTIONFIELD, ValidationComponent> c : m_fieldsGeneral) {
+            TRANSACTIONFIELD fieldtype = c.getKey();
+            ValidationComponent component = c.getValue();
+            Object value = m_transaction.get(fieldtype);
+            if (value.getClass().equals(CategoryString.class)) {
+                value = ((CategoryString) value).toString();
             }
+            component.setValue(value);
         }
+    }
+
+    private String[] categoryStringArrayToStringArray(CategoryString[] cs) {
+        String[] result = new String[cs.length];
+        for (int i = 0; i < cs.length; i++) {
+            result[i] = cs[i].toString();
+        }
+        return result;
     }
 
     // UI help functions -------------------------------------------------------
@@ -321,18 +296,6 @@ public class AddEditTransaction extends JDialog {
     }
 
     /**
-     * Create an editable JComboBox with a given set of values.
-     *
-     * @param values
-     * @return
-     */
-    private JComboBox editableCombobox(String[] values) {
-        JComboBox jcb = new JComboBox(values);
-        jcb.setEditable(true);
-        return jcb;
-    }
-
-    /**
      * Create a spinner that formats its text as a currency.
      *
      * @return
@@ -347,48 +310,6 @@ public class AddEditTransaction extends JDialog {
         format.setDecimalFormatSymbols(decimalFormatSymbols);
         spinner.setEditor(editor);
         return spinner;
-    }
-
-    /**
-     * Create an editable combobox that checks if its text contains " > ".
-     *
-     * @param values
-     * @return
-     */
-    private Component editableValidationCombobox(String[] values) {
-        JComboBox combo = editableCombobox(values);
-        JTextField tf = (JTextField) (combo.getEditor().getEditorComponent());
-        tf.setInputVerifier(new InputVerifier() {
-            @Override
-            public boolean verify(JComponent input) {
-                String text = ((JTextField) input).getText();
-                return text.contains(" > ");
-            }
-        });
-        return combo;
-    }
-
-    /**
-     * Create a textField which only accepts dates.
-     *
-     * @param today true if the text should be set to today.
-     * @return
-     */
-    private Component dateTextfield(boolean today, boolean canBeEmpty) {
-        JFormattedTextField ftf = new JFormattedTextField(m_dateFormat);
-        ftf.setColumns(10);
-        try {
-            MaskFormatter mf = new MaskFormatter("##/##/####");
-            mf.setPlaceholderCharacter('_');
-            mf.install(ftf);
-        } catch (ParseException ex) {
-            System.out.println("Mask went wrong");
-        }
-        if (today) {
-            Date date = new Date();
-            ftf.setText(m_dateFormat.format(date));
-        }
-        return ftf;
     }
 
     // Public functions --------------------------------------------------------
