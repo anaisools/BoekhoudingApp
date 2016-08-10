@@ -3,6 +3,8 @@ package dialogs;
 import data.Data;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.text.*;
 import java.util.*;
 import javafx.util.Pair;
@@ -41,6 +43,10 @@ public class AddEditTransaction extends JDialog {
     private ArrayList<Pair<TRANSACTIONFIELD, ValidationComponent>> m_fieldsGeneral;
     private ArrayList<Pair<TRANSACTIONFIELD, ValidationComponent>> m_fieldsLoans;
 
+    private JCheckBox m_isLoan;
+    private JPanel m_loansPanel;
+    private JCheckBox m_isExceptional;
+
     // Constructors ------------------------------------------------------------
     public AddEditTransaction(JFrame parent) {
         super(parent, "Add transaction", Dialog.ModalityType.APPLICATION_MODAL);
@@ -78,6 +84,9 @@ public class AddEditTransaction extends JDialog {
         m_approveButton = new JButton("Ok");
         m_disapproveButton = new JButton("Cancel");
 
+        m_isLoan = new JCheckBox("Needs to be paid (back)");
+        m_isExceptional = new JCheckBox("Exceptional transaction");
+
         // create text values for dropdowns
         String[] categories = Data.GetInstance().getTransactions().getDistinctCategories();
         String[] transactors = categoryStringArrayToStringArray(Data.GetInstance().getTransactions().getDistinctTransactors());
@@ -91,8 +100,8 @@ public class AddEditTransaction extends JDialog {
         m_fieldsGeneral.add(new Pair(TRANSACTIONFIELD.PRICE, new ValidationCurrencyField()));
         m_fieldsGeneral.add(new Pair(TRANSACTIONFIELD.CATEGORY, new ValidationComboBox(false, "Category", null, categories)));
         m_fieldsGeneral.add(new Pair(TRANSACTIONFIELD.TRANSACTOR, new ValidationComboBox(false, "Transactor category > Transactor", " > ", transactors)));
-        m_fieldsGeneral.add(new Pair(TRANSACTIONFIELD.DATEADDED, new ValidationDateField(false, today, "Date added (dd/MM/yyyy)")));
-        m_fieldsGeneral.add(new Pair(TRANSACTIONFIELD.DATEPAID, new ValidationDateField(true, today, "Date paid (dd/MM/yyyy)")));
+        m_fieldsGeneral.add(new Pair(TRANSACTIONFIELD.DATEADDED, new ValidationDateField(false, today, "Date added (dd/mm/yyyy)")));
+        m_fieldsGeneral.add(new Pair(TRANSACTIONFIELD.DATEPAID, new ValidationDateField(true, today, "Date paid (dd/mm/yyyy)")));
         m_fieldsGeneral.add(new Pair(TRANSACTIONFIELD.PAYMENTMETHOD, new ValidationComboBox(false, "Payment method category > Payment method", " > ", paymentMethods)));
 
         m_fieldsLoans = new ArrayList();
@@ -105,7 +114,7 @@ public class AddEditTransaction extends JDialog {
      * Set layout-related preferences for the dialog.
      */
     private void setPreferences() {
-        int width = 600, height = 700;
+        int width = 600, height = 650;
         this.setPreferredSize(new Dimension(width, height));
         this.setMinimumSize(this.getPreferredSize());
 
@@ -129,8 +138,84 @@ public class AddEditTransaction extends JDialog {
             m_approved = false;
             this.dispose();
         });
+        m_isLoan.addItemListener((ItemEvent ie) -> {
+            m_loansPanel.setVisible(m_isLoan.isSelected());
+        });
     }
 
+    /**
+     * Validates all fields. If all fields have a valid value, the function
+     * returns true, otherwise false.
+     *
+     * @return true if all required fields are valid, false if not
+     */
+    private boolean validateFields() {
+        boolean allValid = true; // assume everything is valid
+
+        for (Pair<TRANSACTIONFIELD, ValidationComponent> p : m_fieldsGeneral) {
+            ValidationComponent c = p.getValue();
+            c.forceValidate();
+            if (!c.isValid()) {
+                allValid = false;
+            }
+        }
+
+        // if (isLoan) { check loan fields }
+        return allValid;
+    }
+
+    /**
+     * Generate a transaction from the (validated) text fields.
+     */
+    private void generateTransaction() {
+        if (m_transaction == null) {
+            m_transaction = new Transaction(Data.GetInstance().getTransactions().getNewID());
+        }
+        for (Pair<TRANSACTIONFIELD, ValidationComponent> c : m_fieldsGeneral) {
+            Object content = c.getValue().getValue();
+            TRANSACTIONFIELD field = c.getKey();
+            Class preferredClass = m_transaction.getFieldClass(field);
+            if (preferredClass.equals(CategoryString.class) && content.getClass().equals(String.class)) {
+                content = new CategoryString((String) content);
+            }
+            m_transaction.set(c.getKey(), content);
+        }
+        m_transaction.set(TRANSACTIONFIELD.EXCEPTIONAL, m_isExceptional.isSelected());
+    }
+
+    /**
+     * Load the data of an existing transaction into the text fields.
+     */
+    private void loadData() {
+        if (m_transaction == null) {
+            return;
+        }
+        for (Pair<TRANSACTIONFIELD, ValidationComponent> c : m_fieldsGeneral) {
+            TRANSACTIONFIELD fieldtype = c.getKey();
+            ValidationComponent component = c.getValue();
+            Object value = m_transaction.get(fieldtype);
+            if (value.getClass().equals(CategoryString.class)) {
+                value = ((CategoryString) value).toString();
+            }
+            component.setValue(value);
+        }
+    }
+
+    /**
+     * Convert an array filled with CategoryString objects to a String array.
+     *
+     * @param cs
+     * @return
+     */
+    private String[] categoryStringArrayToStringArray(CategoryString[] cs) {
+        String[] result = new String[cs.length];
+        for (int i = 0; i < cs.length; i++) {
+            result[i] = cs[i].toString();
+        }
+        return result;
+    }
+
+    // UI functions ------------------------------------------------------------
     /**
      * Add members to the dialog using layout managers.
      */
@@ -175,93 +260,29 @@ public class AddEditTransaction extends JDialog {
         general.setBorder(BorderFactory.createTitledBorder(" General "));
         for (int col = 0; col < m_fieldsGeneral.size(); col++) {
             Pair<TRANSACTIONFIELD, ValidationComponent> c = m_fieldsGeneral.get(col);
-            //addWithGridBagConstraints(general, true, true, in, 0, col, 0, 0, c.getKey());
             ((Component) c.getValue()).setPreferredSize(new Dimension(140, 25));
-            addWithGridBagConstraints(general, true, true, in, 0, col, 1, 0, (Component) c.getValue());
+            addWithGridBagConstraints(general, true, false, in, 0, col, 1, 1, (Component) c.getValue());
         }
 
         // loans
-        JPanel loans = new JPanel();
-        loans.setBorder(BorderFactory.createTitledBorder(" Loans "));
+        m_loansPanel = new JPanel();
+        m_loansPanel.setBorder(BorderFactory.createTitledBorder(" Loans "));
         for (int col = 0; col < m_fieldsLoans.size(); col++) {
             Pair<TRANSACTIONFIELD, ValidationComponent> c = m_fieldsLoans.get(col);
-            //addWithGridBagConstraints(loans, true, true, in, 0, col, 0, 0, c.getKey());
             ((Component) c.getValue()).setPreferredSize(new Dimension(140, 25));
-            addWithGridBagConstraints(loans, true, true, in, 0, col, 1, 0, (Component) c.getValue());
+            addWithGridBagConstraints(m_loansPanel, true, false, in, 0, col, 1, 1, (Component) c.getValue());
         }
 
         // main panel
-        addWithGridBagConstraints(m_mainPanel, true, false, in, 0, 0, 1, 1, general);
-        addWithGridBagConstraints(m_mainPanel, true, false, in, 0, 1, 1, 1, loans);
+        int pos = 0, vfill = 1;
+        addWithGridBagConstraints(m_mainPanel, true, false, in, 0, pos++, 1, vfill, general);
+        addWithGridBagConstraints(m_mainPanel, true, false, in, 0, pos++, 1, vfill, m_isExceptional);
+        addWithGridBagConstraints(m_mainPanel, true, false, in, 0, pos++, 1, vfill, m_isLoan);
+        addWithGridBagConstraints(m_mainPanel, true, false, in, 0, pos++, 1, vfill, m_loansPanel);
+        m_loansPanel.setVisible(false);
 
     }
 
-    /**
-     * Validates all fields. If all fields have a valid value, the function
-     * returns true, otherwise false.
-     *
-     * @return true if all required fields are valid, false if not
-     */
-    private boolean validateFields() {
-        boolean allValid = true; // assume everything is valid
-
-        for (Pair<TRANSACTIONFIELD, ValidationComponent> p : m_fieldsGeneral) {
-            ValidationComponent c = p.getValue();
-            c.forceValidate();
-            if (!c.isValid()) {
-                allValid = false;
-            }
-        }
-
-        // if (isLoan) { check loan fields }
-        return allValid;
-    }
-
-    /**
-     * Generate a transaction from the (validated) text fields.
-     */
-    private void generateTransaction() {
-        if (m_transaction == null) {
-            m_transaction = new Transaction(Data.GetInstance().getTransactions().getNewID());
-        }
-        for (Pair<TRANSACTIONFIELD, ValidationComponent> c : m_fieldsGeneral) {
-            Object content = c.getValue().getValue();
-            TRANSACTIONFIELD field = c.getKey();
-            Class preferredClass = m_transaction.getFieldClass(field);
-            if (preferredClass.equals(CategoryString.class) && content.getClass().equals(String.class)) {
-                content = new CategoryString((String) content);
-            }
-            m_transaction.set(c.getKey(), content);
-        }
-    }
-
-    /**
-     * Load the data of an existing transaction into the text fields.
-     */
-    private void loadData() {
-        if (m_transaction == null) {
-            return;
-        }
-        for (Pair<TRANSACTIONFIELD, ValidationComponent> c : m_fieldsGeneral) {
-            TRANSACTIONFIELD fieldtype = c.getKey();
-            ValidationComponent component = c.getValue();
-            Object value = m_transaction.get(fieldtype);
-            if (value.getClass().equals(CategoryString.class)) {
-                value = ((CategoryString) value).toString();
-            }
-            component.setValue(value);
-        }
-    }
-
-    private String[] categoryStringArrayToStringArray(CategoryString[] cs) {
-        String[] result = new String[cs.length];
-        for (int i = 0; i < cs.length; i++) {
-            result[i] = cs[i].toString();
-        }
-        return result;
-    }
-
-    // UI help functions -------------------------------------------------------
     /**
      * Add a component to a JPanel with certain layout parameters.
      *
@@ -280,6 +301,7 @@ public class AddEditTransaction extends JDialog {
             panel.setLayout(new GridBagLayout());
         }
         GridBagConstraints c = new GridBagConstraints();
+        c.anchor = GridBagConstraints.NORTH;
         if (hFill && vFill) {
             c.fill = GridBagConstraints.BOTH;
         } else if (hFill) {
@@ -293,23 +315,6 @@ public class AddEditTransaction extends JDialog {
         c.weightx = xFill;
         c.weighty = yFill;
         panel.add(o, c);
-    }
-
-    /**
-     * Create a spinner that formats its text as a currency.
-     *
-     * @return
-     */
-    private Component currencySpinner() {
-        SpinnerNumberModel model = new SpinnerNumberModel(0.0, -1000000000.0, 1000000000.0, 0.5);
-        JSpinner spinner = new JSpinner(model);
-        String pattern = "€ 0.00";
-        JSpinner.NumberEditor editor = new JSpinner.NumberEditor(spinner, pattern);
-        DecimalFormat format = editor.getFormat();
-        DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols(Locale.FRANCE);
-        format.setDecimalFormatSymbols(decimalFormatSymbols);
-        spinner.setEditor(editor);
-        return spinner;
     }
 
     // Public functions --------------------------------------------------------
