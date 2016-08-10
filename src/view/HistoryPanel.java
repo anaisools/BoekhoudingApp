@@ -38,6 +38,7 @@ public class HistoryPanel extends JPanel implements Observer {
 
     private JButton m_addButton;
     private JButton m_editButton;
+    private JButton m_deleteButton;
 
     public HistoryPanel(JFrame parentFrame) {
         m_parentFrame = parentFrame;
@@ -85,6 +86,7 @@ public class HistoryPanel extends JPanel implements Observer {
         m_buttonPanel = new JPanel();
         m_addButton = new JButton("Add");
         m_editButton = new JButton("Edit");
+        m_deleteButton = new JButton("Delete");
     }
 
     /**
@@ -96,6 +98,7 @@ public class HistoryPanel extends JPanel implements Observer {
         m_nextYearButton.setBackground(Color.darkGray);
         m_addButton.setBackground(Color.darkGray);
         m_editButton.setBackground(Color.darkGray);
+        m_deleteButton.setBackground(Color.darkGray);
     }
 
     /**
@@ -121,6 +124,12 @@ public class HistoryPanel extends JPanel implements Observer {
                 AddEditTransaction dialog = new AddEditTransaction(m_parentFrame, t);
                 dialog.show();
                 // on approving, the passed transaction will be changed and notify the views all by itself.
+            }
+        });
+        m_deleteButton.addActionListener((ActionEvent ae) -> {
+            model.Transaction t = m_tablePanel.getSelectedTransaction();
+            if (t != null) {
+                Data.GetInstance().getTransactions().delete(t);
             }
         });
     }
@@ -150,6 +159,8 @@ public class HistoryPanel extends JPanel implements Observer {
         m_buttonPanel.add(m_addButton, c);
         c.gridx = 1;
         m_buttonPanel.add(m_editButton, c);
+        c.gridx = 2;
+        m_buttonPanel.add(m_deleteButton, c);
 
         // set general UI
         this.setLayout(new GridBagLayout());

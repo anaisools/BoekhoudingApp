@@ -54,6 +54,12 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
         notifyObserversOfChange();
     }
 
+    public void delete(Transaction t) {
+        t.deleteObservers();
+        m_list.remove(t);
+        notifyObserversOfChange();
+    }
+
     public Transaction get(int index) {
         return m_list.get(index);
     }
