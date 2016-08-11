@@ -67,37 +67,14 @@ public class Transaction extends Observable {
     }
 
     /**
-     * Returns the class that the value of a certain field must be.
+     * Get the ID of the transaction.
      *
-     * @param field
      * @return
      */
-    public Class getFieldClass(TRANSACTIONFIELD field) {
-        if (field == null) {
-            return null;
-        }
-        switch (field) {
-            case DESCRIPTION:
-            case CATEGORY:
-                return String.class;
-            case PRICE:
-                return Double.class;
-            case TRANSACTOR:
-            case PAYMENT_METHOD:
-            case PAYBACK_TRANSACTOR:
-                return CategoryString.class;
-            case DATE_ADDED:
-            case DATE_PAID:
-                return Date.class;
-            case EXCEPTIONAL:
-            case PAYBACK:
-                return Boolean.class;
-            default:
-                return null;
-        }
+    public long getID() {
+        return m_id;
     }
 
-    // Getters -----------------------------------------------------------------
     /**
      * Get a certain field based in the TRANSACTIONFIELD-type provided.
      *
@@ -126,82 +103,19 @@ public class Transaction extends Observable {
                 return m_payback;
             case PAYBACK_TRANSACTOR:
                 return m_payBackTransactor;
+            case JOB:
+                return m_isJob;
+            case JOB_HOURS:
+                return m_jobHours;
+            case JOB_WAGE:
+                return m_jobWage;
+            case JOB_DATE:
+                return m_jobDate;
             default:
                 return null;
         }
     }
 
-    public long getID() {
-        return m_id;
-    }
-
-    @Deprecated
-    public String getDescription() {
-        return m_description;
-    }
-
-    @Deprecated
-    public double getPrice() {
-        return m_price;
-    }
-
-    @Deprecated
-    public String getCategory() {
-        return m_category;
-    }
-
-    @Deprecated
-    public CategoryString getTransactor() {
-        return m_transactor;
-    }
-
-    @Deprecated
-    public Date getDateAdded() {
-        return m_dateAdded;
-    }
-
-    @Deprecated
-    public Date getDatePaid() {
-        return m_datePaid;
-    }
-
-    @Deprecated
-    public CategoryString getPaymentMethod() {
-        return m_paymentMethod;
-    }
-
-    @Deprecated
-    public boolean needsPayback() {
-        return m_payback;
-    }
-
-    @Deprecated
-    public CategoryString getPaybackTransactor() {
-        return m_payBackTransactor;
-    }
-
-    @Deprecated
-    public boolean isExceptional() {
-        return m_exceptional;
-    }
-
-    public boolean isJob() {
-        return m_isJob;
-    }
-
-    public double getJobHours() {
-        return m_jobHours;
-    }
-
-    public double getJobWage() {
-        return m_jobWage;
-    }
-
-    public Date getJobDate() {
-        return m_jobDate;
-    }
-
-    // Setters -----------------------------------------------------------------
     /**
      * Set a certain field to the provided value. If the value is not the
      * correct class, nothing will be set.
@@ -245,92 +159,54 @@ public class Transaction extends Observable {
             case PAYBACK_TRANSACTOR:
                 m_payBackTransactor = (CategoryString) value;
                 break;
+            case JOB:
+                m_isJob = (boolean) value;
+                break;
+            case JOB_HOURS:
+                m_jobHours = (double) value;
+                break;
+            case JOB_WAGE:
+                m_jobWage = (double) value;
+                break;
+            case JOB_DATE:
+                m_jobDate = (Date) value;
+                break;
         }
         notifyObserversOfChange();
     }
 
-    @Deprecated
-    public void setDescription(String description) {
-        m_description = description;
-        notifyObserversOfChange();
-    }
-
-    @Deprecated
-    public void setPrice(double price) {
-        m_price = price;
-        notifyObserversOfChange();
-    }
-
-    @Deprecated
-    public void setCategory(String category) {
-        m_category = category;
-        notifyObserversOfChange();
-    }
-
-    @Deprecated
-    public void setTransactor(String transactor, String transactorCategory) {
-        m_transactor = new CategoryString(transactorCategory, transactor);
-        notifyObserversOfChange();
-    }
-
-    @Deprecated
-    public void setDateAdded(Date dateAdded) {
-        m_dateAdded = dateAdded;
-        notifyObserversOfChange();
-    }
-
-    @Deprecated
-    public void setDatePaid(Date datePaid) {
-        m_datePaid = datePaid;
-        notifyObserversOfChange();
-    }
-
-    @Deprecated
-    public void setPaymentMethod(String paymentMethod, String paymentMethodCategory) {
-        m_paymentMethod = new CategoryString(paymentMethodCategory, paymentMethod);
-        notifyObserversOfChange();
-    }
-
-    @Deprecated
-    public void setPayback(boolean needsPayback) {
-        m_payback = needsPayback;
-        notifyObserversOfChange();
-    }
-
-    @Deprecated
-    public void setPaybackTransactor(String paybackTransactor, String paybackTransactorCategory) {
-        setPayback(true);
-        m_payBackTransactor = new CategoryString(paybackTransactorCategory, paybackTransactor);
-        notifyObserversOfChange();
-    }
-
-    @Deprecated
-    public void setExceptional(boolean isExceptional) {
-        m_exceptional = isExceptional;
-        notifyObserversOfChange();
-    }
-
-    public void setJob(boolean isJob) {
-        m_isJob = isJob;
-        notifyObserversOfChange();
-    }
-
-    public void setJobHours(double jobHours) {
-        setJob(true);
-        m_jobHours = jobHours;
-        notifyObserversOfChange();
-    }
-
-    public void setJobWage(double jobWage) {
-        setJob(true);
-        m_jobWage = jobWage;
-        notifyObserversOfChange();
-    }
-
-    public void setJobDate(Date jobDate) {
-        setJob(true);
-        m_jobDate = jobDate;
-        notifyObserversOfChange();
+    /**
+     * Returns the class that the value of a certain field must be.
+     *
+     * @param field
+     * @return
+     */
+    public Class getFieldClass(TRANSACTIONFIELD field) {
+        if (field == null) {
+            return null;
+        }
+        switch (field) {
+            case DESCRIPTION:
+            case CATEGORY:
+                return String.class;
+            case PRICE:
+            case JOB_HOURS:
+            case JOB_WAGE:
+                return Double.class;
+            case TRANSACTOR:
+            case PAYMENT_METHOD:
+            case PAYBACK_TRANSACTOR:
+                return CategoryString.class;
+            case DATE_ADDED:
+            case DATE_PAID:
+                return Date.class;
+            case EXCEPTIONAL:
+            case PAYBACK:
+            case JOB:
+                return Boolean.class;
+            default:
+                return null;
+        }
     }
 
     /**

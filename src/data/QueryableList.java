@@ -272,7 +272,7 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
     public QueryableList selectUnexceptional() {
         QueryableList q = new QueryableList();
         for (Transaction t : this) {
-            if (!t.isExceptional()) {
+            if (!((boolean) t.get(TRANSACTIONFIELD.EXCEPTIONAL))) {
                 q.add(t);
             }
         }
