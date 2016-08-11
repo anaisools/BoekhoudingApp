@@ -121,8 +121,8 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
         QueryableList q = new QueryableList();
         Calendar cal = Calendar.getInstance();
         for (Transaction t : this) {
-            if (t.get(TRANSACTIONFIELD.DATEPAID) != null) {
-                cal.setTime((Date) t.get(TRANSACTIONFIELD.DATEPAID));
+            if (t.get(TRANSACTIONFIELD.DATE_PAID) != null) {
+                cal.setTime((Date) t.get(TRANSACTIONFIELD.DATE_PAID));
                 if (cal.get(Calendar.YEAR) == year) {
                     q.add(t);
                 }
@@ -135,8 +135,8 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
         QueryableList q = new QueryableList();
         Calendar cal = Calendar.getInstance();
         for (Transaction t : this) {
-            if (t.get(TRANSACTIONFIELD.DATEADDED) != null) {
-                cal.setTime((Date) t.get(TRANSACTIONFIELD.DATEADDED));
+            if (t.get(TRANSACTIONFIELD.DATE_ADDED) != null) {
+                cal.setTime((Date) t.get(TRANSACTIONFIELD.DATE_ADDED));
                 if (cal.get(Calendar.YEAR) == year) {
                     q.add(t);
                 }
@@ -149,8 +149,8 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
         QueryableList q = new QueryableList();
         Calendar cal = Calendar.getInstance();
         for (Transaction t : this) {
-            if (t.get(TRANSACTIONFIELD.DATEPAID) != null) {
-                cal.setTime((Date) t.get(TRANSACTIONFIELD.DATEPAID));
+            if (t.get(TRANSACTIONFIELD.DATE_PAID) != null) {
+                cal.setTime((Date) t.get(TRANSACTIONFIELD.DATE_PAID));
                 if (cal.get(Calendar.MONTH) == month) {
                     q.add(t);
                 }
@@ -163,7 +163,7 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
         QueryableList q = new QueryableList();
         Calendar cal = Calendar.getInstance();
         for (Transaction t : this) {
-            cal.setTime((Date) t.get(TRANSACTIONFIELD.DATEADDED));
+            cal.setTime((Date) t.get(TRANSACTIONFIELD.DATE_ADDED));
             if (cal.get(Calendar.MONTH) == month) {
                 q.add(t);
             }
@@ -219,7 +219,7 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
     public CategoryString[] getDistinctPaymentMethods() {
         ArrayList<CategoryString> list = new ArrayList();
         for (Transaction t : this) {
-            CategoryString element = (CategoryString) t.get(TRANSACTIONFIELD.PAYMENTMETHOD);
+            CategoryString element = (CategoryString) t.get(TRANSACTIONFIELD.PAYMENT_METHOD);
             if (!list.contains(element)) {
                 list.add(element);
             }
@@ -250,11 +250,11 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
         Collections.sort(m_list, new Comparator<Transaction>() {
             @Override
             public int compare(Transaction o1, Transaction o2) {
-                if (o1.get(TRANSACTIONFIELD.DATEPAID) != null && o2.get(TRANSACTIONFIELD.DATEPAID) != null) {
-                    return ((Date) o1.get(TRANSACTIONFIELD.DATEPAID)).compareTo((Date) o2.get(TRANSACTIONFIELD.DATEPAID));
-                } else if (o1.get(TRANSACTIONFIELD.DATEPAID) != null) {
+                if (o1.get(TRANSACTIONFIELD.DATE_PAID) != null && o2.get(TRANSACTIONFIELD.DATE_PAID) != null) {
+                    return ((Date) o1.get(TRANSACTIONFIELD.DATE_PAID)).compareTo((Date) o2.get(TRANSACTIONFIELD.DATE_PAID));
+                } else if (o1.get(TRANSACTIONFIELD.DATE_PAID) != null) {
                     return -1;
-                } else if (o2.get(TRANSACTIONFIELD.DATEPAID) != null) {
+                } else if (o2.get(TRANSACTIONFIELD.DATE_PAID) != null) {
                     return 1;
                 } else {
                     return 1;

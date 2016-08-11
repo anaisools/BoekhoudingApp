@@ -34,7 +34,7 @@ public class Transaction extends Observable {
 
     public enum TRANSACTIONFIELD {
 
-        DESCRIPTION, PRICE, CATEGORY, TRANSACTOR, DATEADDED, DATEPAID, PAYMENTMETHOD, EXCEPTIONAL, PAYBACK, PAYBACK_TRANSACTOR
+        DESCRIPTION, PRICE, CATEGORY, TRANSACTOR, DATE_ADDED, DATE_PAID, PAYMENT_METHOD, EXCEPTIONAL, PAYBACK, PAYBACK_TRANSACTOR, JOB, JOB_HOURS, JOB_WAGE, JOB_DATE
     };
 
     public Transaction(long id) {
@@ -73,6 +73,9 @@ public class Transaction extends Observable {
      * @return
      */
     public Class getFieldClass(TRANSACTIONFIELD field) {
+        if (field == null) {
+            return null;
+        }
         switch (field) {
             case DESCRIPTION:
             case CATEGORY:
@@ -80,11 +83,11 @@ public class Transaction extends Observable {
             case PRICE:
                 return Double.class;
             case TRANSACTOR:
-            case PAYMENTMETHOD:
+            case PAYMENT_METHOD:
             case PAYBACK_TRANSACTOR:
                 return CategoryString.class;
-            case DATEADDED:
-            case DATEPAID:
+            case DATE_ADDED:
+            case DATE_PAID:
                 return Date.class;
             case EXCEPTIONAL:
             case PAYBACK:
@@ -111,11 +114,11 @@ public class Transaction extends Observable {
                 return m_category;
             case TRANSACTOR:
                 return m_transactor;
-            case DATEADDED:
+            case DATE_ADDED:
                 return m_dateAdded;
-            case DATEPAID:
+            case DATE_PAID:
                 return m_datePaid;
-            case PAYMENTMETHOD:
+            case PAYMENT_METHOD:
                 return m_paymentMethod;
             case EXCEPTIONAL:
                 return m_exceptional;
@@ -224,13 +227,13 @@ public class Transaction extends Observable {
             case TRANSACTOR:
                 m_transactor = (CategoryString) value;
                 break;
-            case DATEADDED:
+            case DATE_ADDED:
                 m_dateAdded = (Date) value;
                 break;
-            case DATEPAID:
+            case DATE_PAID:
                 m_datePaid = (Date) value;
                 break;
-            case PAYMENTMETHOD:
+            case PAYMENT_METHOD:
                 m_paymentMethod = (CategoryString) value;
                 break;
             case EXCEPTIONAL:
@@ -330,4 +333,62 @@ public class Transaction extends Observable {
         notifyObserversOfChange();
     }
 
+    /**
+     * Convert the string-representation of a transactionfield name to the
+     * actual transactionfield.
+     *
+     * @param name
+     * @return
+     */
+    public TRANSACTIONFIELD stringToTransactionField(String name) {
+        try {
+            return TRANSACTIONFIELD.valueOf(name.toUpperCase());
+        } catch (Exception e) { // conversion did not work
+            return null;
+        }
+    }
+
+    /**
+     * Convert a transactionfield name to its string-representation.
+     *
+     * @param field
+     * @return
+     */
+    public String transactionFieldToString(TRANSACTIONFIELD field) {
+        return field.toString().toLowerCase();
+    }
+
+    /**
+     * Get a list of all the fields that are required for a transaction to be
+     * valid.
+     *
+     * @return
+     */
+    public ArrayList<TRANSACTIONFIELD> requiredFields() {
+        ArrayList<TRANSACTIONFIELD> list = new ArrayList();
+        list.add(TRANSACTIONFIELD.DESCRIPTION);
+        list.add(TRANSACTIONFIELD.PRICE);
+        list.add(TRANSACTIONFIELD.CATEGORY);
+        list.add(TRANSACTIONFIELD.TRANSACTOR);
+        list.add(TRANSACTIONFIELD.DATE_ADDED);
+        list.add(TRANSACTIONFIELD.PAYMENT_METHOD);
+        return list;
+    }
+
+    /**
+     * Get a list of all fields that have a non-null value in the current
+     * transaction.
+     *
+     * @return
+     */
+    public ArrayList<TRANSACTIONFIELD> presentFields() {
+        ArrayList<TRANSACTIONFIELD> list = new ArrayList();
+        for (TRANSACTIONFIELD t : TRANSACTIONFIELD.values()) {
+            Object o = get(t);
+            if (o != null && !(o.getClass().equals(Boolean.class) && !((boolean) o))) {
+                list.add(t);
+            }
+        }
+        return list;
+    }
 }

@@ -84,8 +84,8 @@ public class TablePanel extends JPanel {
                     getColumn(p.getKey()).setMinWidth(80);
                     getColumn(p.getKey()).setMaxWidth(120);
                     break;
-                case DATEADDED:
-                case DATEPAID:
+                case DATE_ADDED:
+                case DATE_PAID:
                     getColumn(p.getKey()).setCellRenderer(new DateTableCellRenderer());
                     break;
                 case EXCEPTIONAL:

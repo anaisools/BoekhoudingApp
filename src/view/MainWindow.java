@@ -199,6 +199,13 @@ public class MainWindow extends JFrame {
                 item_save.setEnabled(data.Data.GetInstance().dataHasChanged());
             }
         });
+        item_savequit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                data.Data.GetInstance().saveData();
+                System.exit(0);
+            }
+        });
         item_exit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {

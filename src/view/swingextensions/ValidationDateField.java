@@ -64,9 +64,8 @@ public class ValidationDateField extends JTextField implements ValidationCompone
     @Override
     public void setValue(Object value) {
         if (value == null) {
-            return;
-        }
-        if (value.getClass().equals(Date.class)) {
+            setText("");
+        } else if (value.getClass().equals(Date.class)) {
             setText((Date) value);
         }
     }

@@ -7,9 +7,11 @@ import java.text.*;
 import java.util.*;
 import javafx.util.Pair;
 import javax.xml.parsers.*;
+import model.CategoryString;
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
 import model.Transaction;
+import model.Transaction.TRANSACTIONFIELD;
 
 /**
  * This class handles the opening, reading and saving of files. If a file is
@@ -126,52 +128,44 @@ public class XMLFileHandler {
      * @param transaction
      */
     private void parseXMLToTransaction(XElement transaction) {
-        String[] requiredElements = new String[]{
-            "ID", "description", "price", "category",
-            "transactor", "transactorCategory",
-            "dateAdded", //"datePaid",
-            "paymentMethod", "paymentMethodCategory"
-        };
-        for (String s : requiredElements) {
-            if (!transaction.hasChild(s)) {
-                System.out.println("Not added because required field " + s + " not present.");
-                return;
-            }
-            XElement child = transaction.getChild(s);
-            if (child.getValue() == null || child.getValue().equals("")) {
-                System.out.println("Not added because required field " + s + " is null.");
-                return;
+        if (!transaction.hasChild("ID")) {
+            System.out.println("Transaction not added because no ID found.");
+            return;
+        }
+        long id = Long.parseLong(transaction.getChild("ID").getValue());
+        Transaction t = new Transaction(id);
+
+        ArrayList<TRANSACTIONFIELD> requiredFields = t.requiredFields();
+        for (XElement child : transaction.getChildren()) {
+            String name = child.getName();
+            Object value = child.getValue();
+            if (!name.equals("ID")) {
+                TRANSACTIONFIELD field = t.stringToTransactionField(name);
+                if (field == null && !name.equals("ID")) {
+                    System.out.println("Transaction " + id + " has invalid field \"" + name + "\" and was not parsed.");
+                    return;
+                }
+                requiredFields.remove(field);
+                Class preferredClass = t.getFieldClass(field);
+                if (preferredClass.equals(Double.class)) {
+                    value = Double.parseDouble((String) value);
+                } else if (preferredClass.equals(Boolean.class)) {
+                    value = Boolean.parseBoolean((String) value);
+                } else if (preferredClass.equals(Date.class)) {
+                    value = stringToDate((String) value);
+                } else if (preferredClass.equals(CategoryString.class)) {
+                    value = new CategoryString((String) value);
+                }
+                t.set(field, value);
             }
         }
-        // Element represents a valid transaction now
-        Transaction t = new Transaction(Long.parseLong(transaction.getChild("ID").getValue()));
-        for (XElement child : transaction.getChildren()) {
-            String value = child.getValue();
-            switch (child.getName()) {
-                case "description":
-                    t.setDescription(value);
-                    break;
-                case "price":
-                    t.setPrice(Double.parseDouble(value));
-                    break;
-                case "category":
-                    t.setCategory(value);
-                    break;
-                case "transactor":
-                    t.setTransactor(value, transaction.getChild("transactorCategory").getValue());
-                    break;
-                case "dateAdded":
-                    t.setDateAdded(stringToDate(value));
-                    break;
-                case "datePaid":
-                    t.setDatePaid(stringToDate(value));
-                    break;
-                case "paymentMethod":
-                    t.setPaymentMethod(value, transaction.getChild("paymentMethodCategory").getValue());
-                    break;
-                case "exceptional":
-                    t.setExceptional(Boolean.parseBoolean(value));
+        if (requiredFields.size() > 0) { // not all required fields were found
+            System.out.println("Transaction " + id + " does not contain required field(s): ");
+            for (TRANSACTIONFIELD field : requiredFields) {
+                System.out.println("\"" + field.toString().toLowerCase() + "\" ");
             }
+            System.out.println("and was not parsed.");
+            return;
         }
         m_transactions.add(t);
     }
@@ -183,7 +177,7 @@ public class XMLFileHandler {
      * @param e
      */
     private void parseXMLToString(XElement e) {
-        // TODO
+        // TODO: settings etc, non-transaction elements
     }
 
     /**
@@ -209,30 +203,8 @@ public class XMLFileHandler {
     private XElement parseTransactionToXML(Transaction t) {
         XElement e = new XElement("transaction");
         e.addChild(new XElement("ID", objectToString(t.getID())));
-        e.addChild(new XElement("description", objectToString(t.getDescription())));
-        e.addChild(new XElement("price", objectToString(t.getPrice())));
-        e.addChild(new XElement("category", objectToString(t.getCategory())));
-        e.addChild(new XElement("transactor", objectToString(t.getTransactor().getValue())));
-        e.addChild(new XElement("transactorCategory", objectToString(t.getTransactor().getCategory())));
-        e.addChild(new XElement("dateAdded", objectToString(t.getDateAdded())));
-        if (t.getDatePaid() != null) {
-            e.addChild(new XElement("datePaid", objectToString(t.getDatePaid())));
-        }
-        e.addChild(new XElement("paymentMethod", objectToString(t.getPaymentMethod().getValue())));
-        e.addChild(new XElement("paymentMethodCategory", objectToString(t.getPaymentMethod().getCategory())));
-        if (t.isExceptional()) {
-            e.addChild(new XElement("exceptional", objectToString(t.isExceptional())));
-        }
-        if (t.needsPayback()) {
-            e.addChild(new XElement("payback", objectToString(t.needsPayback())));
-            e.addChild(new XElement("paybackTransactor", objectToString(t.getPaybackTransactor().getValue())));
-            e.addChild(new XElement("paybackTransactorCategory", objectToString(t.getPaybackTransactor().getCategory())));
-        }
-        if (t.isJob()) {
-            e.addChild(new XElement("isJob", objectToString(t.isJob())));
-            e.addChild(new XElement("jobHours", objectToString(t.getJobHours())));
-            e.addChild(new XElement("jobWage", objectToString(t.getJobWage())));
-            e.addChild(new XElement("jobDate", objectToString(t.getJobDate())));
+        for (TRANSACTIONFIELD f : t.presentFields()) {
+            e.addChild(new XElement(t.transactionFieldToString(f), objectToString(t.get(f))));
         }
         return e;
     }
@@ -244,6 +216,9 @@ public class XMLFileHandler {
      * @return
      */
     private String objectToString(Object o) {
+        if (o.getClass().equals(CategoryString.class)) {
+            o = ((CategoryString) o).toString();
+        }
         if (o.getClass().equals(String.class)) {
             return ((String) o).replace("&", "&amp;");
         } else if (o.getClass().equals(Date.class)) {
@@ -487,5 +462,4 @@ public class XMLFileHandler {
         }
 
     }
-
 }

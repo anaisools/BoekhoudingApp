@@ -46,6 +46,7 @@ public class AddEditTransaction extends JDialog {
     private JCheckBox m_isLoan;
     private JPanel m_loansPanel;
     private JCheckBox m_isExceptional;
+    private ValidationDateField m_datePaidField;
 
     // Constructors ------------------------------------------------------------
     public AddEditTransaction(JFrame parent) {
@@ -100,14 +101,15 @@ public class AddEditTransaction extends JDialog {
         m_fieldsGeneral.add(new Pair(TRANSACTIONFIELD.PRICE, new ValidationCurrencyField()));
         m_fieldsGeneral.add(new Pair(TRANSACTIONFIELD.CATEGORY, new ValidationComboBox(false, "Category", null, categories)));
         m_fieldsGeneral.add(new Pair(TRANSACTIONFIELD.TRANSACTOR, new ValidationComboBox(false, "Transactor category > Transactor", " > ", transactors)));
-        m_fieldsGeneral.add(new Pair(TRANSACTIONFIELD.DATEADDED, new ValidationDateField(false, today, "Date added (dd/mm/yyyy)")));
-        m_fieldsGeneral.add(new Pair(TRANSACTIONFIELD.DATEPAID, new ValidationDateField(true, today, "Date paid (dd/mm/yyyy)")));
-        m_fieldsGeneral.add(new Pair(TRANSACTIONFIELD.PAYMENTMETHOD, new ValidationComboBox(false, "Payment method category > Payment method", " > ", paymentMethods)));
+        m_fieldsGeneral.add(new Pair(TRANSACTIONFIELD.DATE_ADDED, new ValidationDateField(false, today, "Date added (dd/mm/yyyy)")));
+        m_datePaidField = new ValidationDateField(true, today, "Date paid (dd/mm/yyyy)");
+        m_fieldsGeneral.add(new Pair(TRANSACTIONFIELD.DATE_PAID, m_datePaidField));
+        m_fieldsGeneral.add(new Pair(TRANSACTIONFIELD.PAYMENT_METHOD, new ValidationComboBox(false, "Payment method category > Payment method", " > ", paymentMethods)));
 
         m_fieldsLoans = new ArrayList();
-        //m_fieldsLoans.add(new Pair(TRANSACTIONFIELD.PAYBACK, new ValidationTextField(true, "REMOVE THIS", null)));
-        //m_fieldsLoans.add(new Pair(TRANSACTIONFIELD.PAYBACK_TRANSACTOR, new ValidationComboBox(true, "Transactorcategory > Transactor", " > ", transactors)));
-        //m_fieldsLoans.add(new Pair(TRANSACTIONFIELD.DATEPAID, new ValidationDateField(true, null, "Date paid back (dd/mm/yyyy)")));
+        m_fieldsLoans.add(new Pair(TRANSACTIONFIELD.PAYBACK_TRANSACTOR, new ValidationComboBox(false, "Payback transactor category > Payback transactor", " > ", transactors)));
+        m_fieldsLoans.add(new Pair(TRANSACTIONFIELD.DATE_PAID, new ValidationDateField(true, null, "Date paid back (dd/mm/yyyy), leave empty if not yet paid")));
+
     }
 
     /**
@@ -139,7 +141,7 @@ public class AddEditTransaction extends JDialog {
             this.dispose();
         });
         m_isLoan.addItemListener((ItemEvent ie) -> {
-            m_loansPanel.setVisible(m_isLoan.isSelected());
+            setLoan(m_isLoan.isSelected());
         });
     }
 
@@ -171,16 +173,32 @@ public class AddEditTransaction extends JDialog {
         if (m_transaction == null) {
             m_transaction = new Transaction(Data.GetInstance().getTransactions().getNewID());
         }
-        for (Pair<TRANSACTIONFIELD, ValidationComponent> c : m_fieldsGeneral) {
-            Object content = c.getValue().getValue();
-            TRANSACTIONFIELD field = c.getKey();
-            Class preferredClass = m_transaction.getFieldClass(field);
-            if (preferredClass.equals(CategoryString.class) && content.getClass().equals(String.class)) {
-                content = new CategoryString((String) content);
+        for (Pair<TRANSACTIONFIELD, ValidationComponent> p : m_fieldsGeneral) {
+            setTransactionFieldFromComponent(p.getKey(), p.getValue());
+        }
+        m_transaction.set(TRANSACTIONFIELD.PAYBACK, m_isLoan.isSelected());
+        if (m_isLoan.isSelected()) {
+            for (Pair<TRANSACTIONFIELD, ValidationComponent> p : m_fieldsLoans) {
+                setTransactionFieldFromComponent(p.getKey(), p.getValue());
             }
-            m_transaction.set(c.getKey(), content);
         }
         m_transaction.set(TRANSACTIONFIELD.EXCEPTIONAL, m_isExceptional.isSelected());
+    }
+
+    /**
+     * Set the value of the transaction's field with the value from a certain
+     * component.
+     *
+     * @param field
+     * @param component
+     */
+    private void setTransactionFieldFromComponent(TRANSACTIONFIELD field, ValidationComponent component) {
+        Object content = component.getValue();
+        Class preferredClass = m_transaction.getFieldClass(field);
+        if (preferredClass.equals(CategoryString.class) && content.getClass().equals(String.class)) {
+            content = new CategoryString((String) content);
+        }
+        m_transaction.set(field, content);
     }
 
     /**
@@ -190,14 +208,26 @@ public class AddEditTransaction extends JDialog {
         if (m_transaction == null) {
             return;
         }
-        for (Pair<TRANSACTIONFIELD, ValidationComponent> c : m_fieldsGeneral) {
-            TRANSACTIONFIELD fieldtype = c.getKey();
-            ValidationComponent component = c.getValue();
+        for (Pair<TRANSACTIONFIELD, ValidationComponent> pair : m_fieldsGeneral) {
+            TRANSACTIONFIELD fieldtype = pair.getKey();
+            ValidationComponent component = pair.getValue();
             Object value = m_transaction.get(fieldtype);
-            if (value.getClass().equals(CategoryString.class)) {
+            if (value != null && value.getClass().equals(CategoryString.class)) {
                 value = ((CategoryString) value).toString();
             }
             component.setValue(value);
+        }
+        setLoan((boolean) m_transaction.get(TRANSACTIONFIELD.PAYBACK));
+        if ((boolean) m_transaction.get(TRANSACTIONFIELD.PAYBACK)) {
+            for (Pair<TRANSACTIONFIELD, ValidationComponent> pair : m_fieldsLoans) {
+                TRANSACTIONFIELD fieldtype = pair.getKey();
+                ValidationComponent component = pair.getValue();
+                Object value = m_transaction.get(fieldtype);
+                if (value != null && value.getClass().equals(CategoryString.class)) {
+                    value = ((CategoryString) value).toString();
+                }
+                component.setValue(value);
+            }
         }
     }
 
@@ -213,6 +243,18 @@ public class AddEditTransaction extends JDialog {
             result[i] = cs[i].toString();
         }
         return result;
+    }
+
+    /**
+     * Set if the dialog should show fields for loans or not. This also sets the
+     * isLoan checkbox.
+     *
+     * @param isLoan
+     */
+    private void setLoan(boolean isLoan) {
+        m_isLoan.setSelected(isLoan);
+        m_loansPanel.setVisible(isLoan);
+        m_datePaidField.setEnabled(!isLoan);
     }
 
     // UI functions ------------------------------------------------------------

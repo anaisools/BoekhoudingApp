@@ -69,7 +69,9 @@ public class ValidationComboBox extends JComboBox implements ValidationComponent
 
     @Override
     public void setValue(Object value) {
-        if (value.getClass().equals(String.class)) {
+        if (value == null) {
+            setText("");
+        } else if (value.getClass().equals(String.class)) {
             setText((String) value);
         }
     }
