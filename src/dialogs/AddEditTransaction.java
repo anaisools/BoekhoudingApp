@@ -4,8 +4,6 @@ import data.Data;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.text.*;
 import java.util.*;
 import javafx.util.Pair;
 import javax.swing.*;

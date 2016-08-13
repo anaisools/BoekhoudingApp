@@ -265,6 +265,14 @@ public class Transaction extends Observable {
                 list.add(t);
             }
         }
+        if (!m_payback) {
+            list.remove(TRANSACTIONFIELD.PAYBACK_TRANSACTOR);
+        }
+        if (!m_isJob) {
+            list.remove(TRANSACTIONFIELD.JOB_HOURS);
+            list.remove(TRANSACTIONFIELD.JOB_WAGE);
+            list.remove(TRANSACTIONFIELD.JOB_DATE);
+        }
         return list;
     }
 }

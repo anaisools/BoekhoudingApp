@@ -68,7 +68,7 @@ public class TablePanel extends JPanel {
     }
 
     /**
-     * Set layout-related preferences for the frame.
+     * Set layout-related preferences for the panel.
      */
     private void setPreferences() {
         m_table.setDefaultRenderer(Object.class, new PaddingTableCellRenderer());
@@ -101,14 +101,14 @@ public class TablePanel extends JPanel {
     }
 
     /**
-     * Set actions for members of the frame.
+     * Set actions for members of the panel.
      */
     private void setActions() {
 
     }
 
     /**
-     * Add members to the frame, using layout managers.
+     * Add members to the panel, using layout managers.
      */
     private void createUI() {
         this.setLayout(new GridBagLayout());
