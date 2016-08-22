@@ -1,6 +1,7 @@
 package view;
 
 import java.awt.*;
+import static java.awt.Frame.NORMAL;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.util.Observable;
@@ -86,6 +87,7 @@ public class MainWindow extends JFrame {
         m_tabs.setTabComponentAt(2, m_loansTab);
 
         createMenuBar();
+        addMinimizeToTray();
     }
 
     /**
@@ -105,6 +107,10 @@ public class MainWindow extends JFrame {
         m_historyTab.setBorder(BorderFactory.createEmptyBorder(top, left, bottom, right));
         m_statsTab.setBorder(BorderFactory.createEmptyBorder(top, left, bottom, right));
         m_loansTab.setBorder(BorderFactory.createEmptyBorder(top, left, bottom, right));
+
+        // Set icon
+        java.net.URL url = ClassLoader.getSystemResource("img/AppIcon.png");
+        this.setIconImage(Toolkit.getDefaultToolkit().createImage(url));
 
         // Maximize
         this.setExtendedState(this.getExtendedState() | JFrame.MAXIMIZED_BOTH);
@@ -219,6 +225,59 @@ public class MainWindow extends JFrame {
         menu_file.addSeparator();
         menu_file.add(item_exit);
         m_menuBar.add(menu_preferences);
+    }
+
+    /**
+     * Make it possible to minimize the window to the system tray.
+     */
+    private void addMinimizeToTray() {
+        if (SystemTray.isSupported()) {
+            // set icon
+            Image image = getScaledImageIcon("AppIcon.png", 20, 20).getImage();
+
+            // create the popup menu of the tray icon
+            PopupMenu popupMenu = new PopupMenu();
+            MenuItem item = new MenuItem("Open");
+            item.addActionListener((ActionEvent ae) -> {
+                setVisible(true);
+                setExtendedState(JFrame.NORMAL);
+            });
+            popupMenu.add(item);
+            item = new MenuItem("Add transaction");
+            item.addActionListener((ActionEvent ae) -> {
+                dialogs.AddEditTransaction dialog = new dialogs.AddEditTransaction(null);
+                dialog.show();
+                if (dialog.isApproved() && dialog.getTransaction() != null) {
+                    data.Data.GetInstance().getTransactions().add(dialog.getTransaction());
+                }
+            });
+            popupMenu.add(item);
+            item = new MenuItem("Exit");
+            item.addActionListener((ActionEvent ae) -> {
+                System.exit(0);
+            });
+            popupMenu.add(item);
+            // create tray icon
+            TrayIcon trayIcon = new TrayIcon(image, this.getTitle(), popupMenu);
+            trayIcon.setImageAutoSize(true);
+
+            // add window listener to minimize
+            addWindowStateListener(new WindowStateListener() {
+                @Override
+                public void windowStateChanged(WindowEvent e) {
+                    if (e.getNewState() == ICONIFIED || e.getNewState() == 7) {
+                        try {
+                            SystemTray.getSystemTray().add(trayIcon);
+                            setVisible(false);
+                        } catch (AWTException ex) {
+                        }
+                    } else if (e.getNewState() == MAXIMIZED_BOTH || e.getNewState() == NORMAL) {
+                        SystemTray.getSystemTray().remove(trayIcon);
+                        setVisible(true);
+                    }
+                }
+            });
+        }
     }
 
     // Public functions --------------------------------------------------------
