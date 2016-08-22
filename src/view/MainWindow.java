@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.*;
+import model.Settings;
 
 /**
  * The main window of the class is a container with tabs. It manages the
@@ -113,7 +114,7 @@ public class MainWindow extends JFrame {
         this.setIconImage(Toolkit.getDefaultToolkit().createImage(url));
 
         // Maximize
-        this.setExtendedState(this.getExtendedState() | JFrame.MAXIMIZED_BOTH);
+        updateWindowMaximized();
     }
 
     /**
@@ -121,15 +122,13 @@ public class MainWindow extends JFrame {
      */
     private void setActions() {
         this.addWindowListener(new WindowListener() {
-
             @Override
             public void windowOpened(WindowEvent we) {
             }
 
             @Override
             public void windowClosing(WindowEvent we) {
-                // TODO: only do this when autosave is on
-                data.Data.GetInstance().saveData();
+                exit(false);
             }
 
             @Override
@@ -151,7 +150,6 @@ public class MainWindow extends JFrame {
             @Override
             public void windowDeactivated(WindowEvent we) {
             }
-
         });
     }
 
@@ -187,16 +185,19 @@ public class MainWindow extends JFrame {
     private void createMenuBar() {
         m_menuBar = new JMenuBar();
         JMenu menu_file = new JMenu(" File ");
-        JMenu menu_preferences = new JMenu(" Preferences ");
         JMenuItem item_save = new JMenuItem("Save");
         JMenuItem item_savequit = new JMenuItem("Save and quit");
         JMenuItem item_exit = new JMenuItem("Exit");
+        JMenu menu_preferences = new JMenu(" Preferences ");
+        JMenuItem item_maximizeWindow = new JCheckBoxMenuItem("Maximize window on start");
+        JMenuItem item_minimizeToTray = new JCheckBoxMenuItem("Minimize to tray");
+        JMenuItem item_autoSave = new JCheckBoxMenuItem("Autosave every change");
+        JMenuItem item_saveOnClose = new JCheckBoxMenuItem("Save on exit");
 
         item_save.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
         item_save.addActionListener(new DataTriggeredActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                System.out.println("Saving!");
                 data.Data.GetInstance().saveData();
             }
 
@@ -205,18 +206,23 @@ public class MainWindow extends JFrame {
                 item_save.setEnabled(data.Data.GetInstance().dataHasChanged());
             }
         });
-        item_savequit.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                data.Data.GetInstance().saveData();
-                System.exit(0);
-            }
+        item_savequit.addActionListener((ActionEvent ae) -> {
+            exit(true);
         });
-        item_exit.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                System.exit(0);
-            }
+        item_exit.addActionListener((ActionEvent ae) -> {
+            exit(false);
+        });
+        item_maximizeWindow.addItemListener((ItemEvent ie) -> {
+            Settings.GetInstance().setMaximizeWindow(ie.getStateChange() == ItemEvent.SELECTED);
+        });
+        item_minimizeToTray.addItemListener((ItemEvent ie) -> {
+            Settings.GetInstance().setMinimizeToTray(ie.getStateChange() == ItemEvent.SELECTED);
+        });
+        item_autoSave.addItemListener((ItemEvent ie) -> {
+            Settings.GetInstance().setAutoSave(ie.getStateChange() == ItemEvent.SELECTED);
+        });
+        item_saveOnClose.addItemListener((ItemEvent ie) -> {
+            Settings.GetInstance().setSaveOnClose(ie.getStateChange() == ItemEvent.SELECTED);
         });
 
         m_menuBar.add(menu_file);
@@ -225,6 +231,12 @@ public class MainWindow extends JFrame {
         menu_file.addSeparator();
         menu_file.add(item_exit);
         m_menuBar.add(menu_preferences);
+        menu_preferences.add(item_maximizeWindow);
+        menu_preferences.add(item_minimizeToTray);
+        menu_preferences.addSeparator();
+        menu_preferences.add(item_autoSave);
+        menu_preferences.add(item_saveOnClose);
+
     }
 
     /**
@@ -243,6 +255,7 @@ public class MainWindow extends JFrame {
                 setExtendedState(JFrame.NORMAL);
             });
             popupMenu.add(item);
+            popupMenu.addSeparator();
             item = new MenuItem("Add transaction");
             item.addActionListener((ActionEvent ae) -> {
                 dialogs.AddEditTransaction dialog = new dialogs.AddEditTransaction(null);
@@ -252,9 +265,14 @@ public class MainWindow extends JFrame {
                 }
             });
             popupMenu.add(item);
+            item = new MenuItem("Save and exit");
+            item.addActionListener((ActionEvent ae) -> {
+                exit(true);
+            });
+            popupMenu.add(item);
             item = new MenuItem("Exit");
             item.addActionListener((ActionEvent ae) -> {
-                System.exit(0);
+                exit(false);
             });
             popupMenu.add(item);
             // create tray icon
@@ -265,7 +283,7 @@ public class MainWindow extends JFrame {
             addWindowStateListener(new WindowStateListener() {
                 @Override
                 public void windowStateChanged(WindowEvent e) {
-                    if (e.getNewState() == ICONIFIED || e.getNewState() == 7) {
+                    if (Settings.GetInstance().getMinimizeToTray() && (e.getNewState() == ICONIFIED || e.getNewState() == 7)) {
                         try {
                             SystemTray.getSystemTray().add(trayIcon);
                             setVisible(false);
@@ -277,6 +295,34 @@ public class MainWindow extends JFrame {
                     }
                 }
             });
+        }
+    }
+
+    /**
+     * Function to call when exiting that allows saving before exiting the
+     * application.
+     *
+     * @param save when true, the data will be saved. When false, the data will
+     * be saved if saveOnClose in the settings is true.
+     */
+    private void exit(boolean save) {
+        if (save || Settings.GetInstance().getSaveOnClose()) {
+            data.Data.GetInstance().saveData();
+            System.out.println("Saving");
+        } else {
+            System.out.println("Not saving");
+        }
+        System.exit(0);
+    }
+
+    /**
+     * Set the window's maximized state to the option in the settings.
+     */
+    private void updateWindowMaximized() {
+        if (Settings.GetInstance().getMaximizeWindow()) {
+            this.setExtendedState(this.getExtendedState() | JFrame.MAXIMIZED_BOTH);
+        } else {
+            this.setExtendedState(JFrame.NORMAL);
         }
     }
 
@@ -295,7 +341,7 @@ public class MainWindow extends JFrame {
                 if ((e.getKeyCode() == KeyEvent.VK_S) && ((e.getModifiers() & KeyEvent.CTRL_MASK) != 0)) {
                     data.Data.GetInstance().saveData();
                 } else if ((e.getKeyCode() == KeyEvent.VK_F4) && ((e.getModifiers() & KeyEvent.ALT_MASK) != 0)) {
-                    // TODO: auto save
+                    exit(false);
                 }
             }
             return false;
