@@ -73,6 +73,10 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
         return null;
     }
 
+    public int count() {
+        return m_list.size();
+    }
+
     /**
      * Get an ID that has not been assigned to any transaction.
      *
@@ -242,6 +246,29 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
     }
 
     /**
+     * Sort this list according to date added.
+     *
+     * @return the same list, but sorted.
+     */
+    public QueryableList sortByDateAdded() {
+        Collections.sort(m_list, new Comparator<Transaction>() {
+            @Override
+            public int compare(Transaction o1, Transaction o2) {
+                if (o1.get(TRANSACTIONFIELD.DATE_ADDED) != null && o2.get(TRANSACTIONFIELD.DATE_ADDED) != null) {
+                    return ((Date) o1.get(TRANSACTIONFIELD.DATE_ADDED)).compareTo((Date) o2.get(TRANSACTIONFIELD.DATE_ADDED));
+                } else if (o1.get(TRANSACTIONFIELD.DATE_ADDED) != null) {
+                    return -1;
+                } else if (o2.get(TRANSACTIONFIELD.DATE_ADDED) != null) {
+                    return 1;
+                } else {
+                    return 1;
+                }
+            }
+        });
+        return this;
+    }
+
+    /**
      * Sort this list according to date paid.
      *
      * @return the same list, but sorted.
@@ -273,6 +300,21 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
         QueryableList q = new QueryableList();
         for (Transaction t : this) {
             if (!((boolean) t.get(TRANSACTIONFIELD.EXCEPTIONAL))) {
+                q.add(t);
+            }
+        }
+        return q;
+    }
+
+    /**
+     * Select all transactions that are loans.
+     *
+     * @return
+     */
+    public QueryableList getLoans() {
+        QueryableList q = new QueryableList();
+        for (Transaction t : this) {
+            if ((boolean) t.get(TRANSACTIONFIELD.PAYBACK)) {
                 q.add(t);
             }
         }

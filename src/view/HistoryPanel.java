@@ -54,6 +54,8 @@ public class HistoryPanel extends JPanel implements Observer {
         // subset data to current year
         Calendar cal = Calendar.getInstance();
         setYear(cal.get(Calendar.YEAR));
+        
+        m_tablePanel.scrollDown();
     }
 
     // Private functions -------------------------------------------------------

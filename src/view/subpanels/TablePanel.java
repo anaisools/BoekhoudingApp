@@ -222,4 +222,11 @@ public class TablePanel extends JPanel {
         long id = (long) m_table.getModel().getValueAt(selectedModelRow, 0);
         return Data.GetInstance().getTransactions().get(id);
     }
+
+    /**
+     * Programmatically scroll the table to the end.
+     */
+    public void scrollDown() {
+        m_table.scrollRectToVisible(m_table.getCellRect(m_table.getRowCount() - 1, 0, true));
+    }
 }

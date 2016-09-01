@@ -60,7 +60,7 @@ public class MainWindow extends JFrame {
         // Create content panels for the tabs
         m_historyPanel = new HistoryPanel(this);
         m_statsPanel = new StatsPanel();
-        m_loansPanel = new LoansPanel();
+        m_loansPanel = new LoansPanel(this);
 
         // Add content panels to tabbedPane
         m_tabs.add(m_historyPanel, 0);

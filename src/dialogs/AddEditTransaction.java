@@ -57,6 +57,8 @@ public class AddEditTransaction extends JDialog {
         setActions();
         createUI();
         loadData();
+
+        setLoan(false);
     }
 
     public AddEditTransaction(JFrame parent, Transaction transactionToEdit) {
@@ -69,6 +71,8 @@ public class AddEditTransaction extends JDialog {
         setActions();
         createUI();
         loadData();
+
+        setLoan((boolean) m_transaction.get(TRANSACTIONFIELD.PAYBACK));
     }
 
     // Private functions -------------------------------------------------------
@@ -106,8 +110,6 @@ public class AddEditTransaction extends JDialog {
 
         m_fieldsLoans = new ArrayList();
         m_fieldsLoans.add(new Pair(TRANSACTIONFIELD.PAYBACK_TRANSACTOR, new ValidationComboBox(false, "Payback transactor category > Payback transactor", " > ", transactors)));
-        m_fieldsLoans.add(new Pair(TRANSACTIONFIELD.DATE_PAID, new ValidationDateField(true, null, "Date paid back (dd/mm/yyyy), leave empty if not yet paid")));
-
     }
 
     /**
@@ -252,7 +254,6 @@ public class AddEditTransaction extends JDialog {
     private void setLoan(boolean isLoan) {
         m_isLoan.setSelected(isLoan);
         m_loansPanel.setVisible(isLoan);
-        m_datePaidField.setEnabled(!isLoan);
     }
 
     // UI functions ------------------------------------------------------------
@@ -293,33 +294,44 @@ public class AddEditTransaction extends JDialog {
      * Add all text fields to the content panel.
      */
     private void createUITextFields() {
-        Insets in = new Insets(10, 10, 10, 10);
+        CustomGridBag cgb = new CustomGridBag();
+        cgb.setAnchor(GridBagConstraints.NORTH);
+        cgb.setInsets(10);
+        cgb.setFill(true, false);
+        cgb.setWeight(1, 1);
 
-        // general
+        // General
         JPanel general = new JPanel();
         general.setBorder(BorderFactory.createTitledBorder(" General "));
         for (int col = 0; col < m_fieldsGeneral.size(); col++) {
             Pair<TRANSACTIONFIELD, ValidationComponent> c = m_fieldsGeneral.get(col);
-            ((Component) c.getValue()).setPreferredSize(new Dimension(140, 25));
-            addWithGridBagConstraints(general, true, false, in, 0, col, 1, 1, (Component) c.getValue());
+            Component comp = (Component) c.getValue();
+            comp.setPreferredSize(new Dimension(140, 25));
+            cgb.add(general, comp, 0, col);
         }
 
-        // loans
+        // Loans
         m_loansPanel = new JPanel();
         m_loansPanel.setBorder(BorderFactory.createTitledBorder(" Loans "));
         for (int col = 0; col < m_fieldsLoans.size(); col++) {
             Pair<TRANSACTIONFIELD, ValidationComponent> c = m_fieldsLoans.get(col);
-            ((Component) c.getValue()).setPreferredSize(new Dimension(140, 25));
-            addWithGridBagConstraints(m_loansPanel, true, false, in, 0, col, 1, 1, (Component) c.getValue());
+            Component comp = (Component) c.getValue();
+            comp.setPreferredSize(new Dimension(140, 25));
+            cgb.add(m_loansPanel, comp, 0, col);
         }
 
-        // main panel
-        int pos = 0, vfill = 1;
-        addWithGridBagConstraints(m_mainPanel, true, false, in, 0, pos++, 1, vfill, general);
-        addWithGridBagConstraints(m_mainPanel, true, false, in, 0, pos++, 1, vfill, m_isExceptional);
-        addWithGridBagConstraints(m_mainPanel, true, false, in, 0, pos++, 1, vfill, m_isLoan);
-        addWithGridBagConstraints(m_mainPanel, true, false, in, 0, pos++, 1, vfill, m_loansPanel);
-        m_loansPanel.setVisible(false);
+        // Main panel
+        cgb.setWeight(1, 0);
+        cgb.setFill(true, false);
+        int pos = 0;
+        cgb.add(m_mainPanel, general, 0, pos++);
+        cgb.add(m_mainPanel, m_isExceptional, 0, pos++);
+        cgb.add(m_mainPanel, m_isLoan, 0, pos++);
+        cgb.add(m_mainPanel, m_loansPanel, 0, pos++);
+
+        JPanel filler = new JPanel();
+        filler.setOpaque(false);
+        cgb.add(m_mainPanel, filler, 0, pos++, true, false, 1, 1);
 
     }
 
