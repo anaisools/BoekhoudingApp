@@ -237,6 +237,10 @@ public class MainWindow extends JFrame {
         menu_preferences.add(item_autoSave);
         menu_preferences.add(item_saveOnClose);
 
+        item_maximizeWindow.setSelected(Settings.GetInstance().getMaximizeWindow());
+        item_minimizeToTray.setSelected(Settings.GetInstance().getMinimizeToTray());
+        item_autoSave.setSelected(Settings.GetInstance().getAutoSave());
+        item_saveOnClose.setSelected(Settings.GetInstance().getSaveOnClose());
     }
 
     /**

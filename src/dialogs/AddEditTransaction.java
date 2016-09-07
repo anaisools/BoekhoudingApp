@@ -87,7 +87,7 @@ public class AddEditTransaction extends JDialog {
         m_approveButton = new JButton("Ok");
         m_disapproveButton = new JButton("Cancel");
 
-        m_isLoan = new JCheckBox("Needs to be paid (back)");
+        m_isLoan = new JCheckBox("Add to a transactor's loan account");
         m_isExceptional = new JCheckBox("Exceptional transaction");
 
         // create text values for dropdowns
@@ -109,7 +109,7 @@ public class AddEditTransaction extends JDialog {
         m_fieldsGeneral.add(new Pair(TRANSACTIONFIELD.PAYMENT_METHOD, new ValidationComboBox(false, "Payment method category > Payment method", " > ", paymentMethods)));
 
         m_fieldsLoans = new ArrayList();
-        m_fieldsLoans.add(new Pair(TRANSACTIONFIELD.PAYBACK_TRANSACTOR, new ValidationComboBox(false, "Payback transactor category > Payback transactor", " > ", transactors)));
+        m_fieldsLoans.add(new Pair(TRANSACTIONFIELD.PAYBACK_TRANSACTOR, new ValidationComboBox(false, "Loan transactor category > Loan transactor", " > ", transactors)));
     }
 
     /**
@@ -162,7 +162,15 @@ public class AddEditTransaction extends JDialog {
             }
         }
 
-        // if (isLoan) { check loan fields }
+        if (m_isLoan.isSelected()) {
+            for (Pair<TRANSACTIONFIELD, ValidationComponent> p : m_fieldsLoans) {
+                ValidationComponent c = p.getValue();
+                c.forceValidate();
+                if (!c.isValid()) {
+                    allValid = false;
+                }
+            }
+        }
         return allValid;
     }
 

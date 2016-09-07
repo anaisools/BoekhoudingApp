@@ -54,7 +54,7 @@ public class HistoryPanel extends JPanel implements Observer {
         // subset data to current year
         Calendar cal = Calendar.getInstance();
         setYear(cal.get(Calendar.YEAR));
-        
+
         m_tablePanel.scrollDown();
     }
 
@@ -121,17 +121,20 @@ public class HistoryPanel extends JPanel implements Observer {
             }
         });
         m_editButton.addActionListener((ActionEvent ae) -> {
-            model.Transaction t = m_tablePanel.getSelectedTransaction();
-            if (t != null) {
-                AddEditTransaction dialog = new AddEditTransaction(m_parentFrame, t);
+            model.Transaction[] t = m_tablePanel.getSelectedTransactions();
+            if (t != null && t.length > 0) {
+                AddEditTransaction dialog = new AddEditTransaction(m_parentFrame, t[0]);
                 dialog.show();
                 // on approving, the passed transaction will be changed and notify the views all by itself.
             }
         });
         m_deleteButton.addActionListener((ActionEvent ae) -> {
-            model.Transaction t = m_tablePanel.getSelectedTransaction();
+            model.Transaction[] t = m_tablePanel.getSelectedTransactions();
             if (t != null) {
-                Data.GetInstance().getTransactions().delete(t);
+                for (model.Transaction a : t) {
+                    Data.GetInstance().getTransactions().delete(a);
+                }
+
             }
         });
     }

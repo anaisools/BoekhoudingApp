@@ -213,14 +213,21 @@ public class TablePanel extends JPanel {
      *
      * @return
      */
-    public Transaction getSelectedTransaction() {
-        int selectedRow = m_table.getSelectedRow();
-        if (selectedRow == -1) {
+    public Transaction[] getSelectedTransactions() {
+        // Get selected rows
+        int[] selectedRows = m_table.getSelectedRows();
+        if (selectedRows == null || selectedRows.length == 0) {
             return null;
         }
-        int selectedModelRow = m_table.convertRowIndexToModel(selectedRow);
-        long id = (long) m_table.getModel().getValueAt(selectedModelRow, 0);
-        return Data.GetInstance().getTransactions().get(id);
+
+        // Get the transactions of these rows
+        Transaction[] transactions = new Transaction[selectedRows.length];
+        for (int i = 0; i < selectedRows.length; i++) {
+            int selectedModelRow = m_table.convertRowIndexToModel(selectedRows[i]);
+            long id = (long) m_table.getModel().getValueAt(selectedModelRow, 0);
+            transactions[i] = Data.GetInstance().getTransactions().get(id);
+        }
+        return transactions;
     }
 
     /**
