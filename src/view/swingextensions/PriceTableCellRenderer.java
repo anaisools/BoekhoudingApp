@@ -18,10 +18,9 @@ public class PriceTableCellRenderer extends PaddingTableCellRenderer {
 
     @Override
     public void setValue(Object value) {
-        String result = String.format("%10.2f", value);
-        result = result.trim();
-        value = "€  " + result.replace('.', ',');
-        super.setValue(value);
+        if (value.getClass().equals(Double.class)) {
+            super.setValue(model.Settings.GetInstance().convertPriceToString((double) value));
+        }
     }
 
     @Override

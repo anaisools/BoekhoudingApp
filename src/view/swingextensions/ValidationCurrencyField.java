@@ -39,7 +39,7 @@ public class ValidationCurrencyField extends JTextField implements ValidationCom
         }
         if (value.getClass().equals(Double.class)) {
             m_value = (double) value;
-            setText(convertDoubleToCurrency(m_value));
+            setText(model.Settings.GetInstance().convertPriceToString(m_value));
         }
     }
 
@@ -83,17 +83,4 @@ public class ValidationCurrencyField extends JTextField implements ValidationCom
             return 0;
         }
     }
-
-    /**
-     * Convert a double to a currency formatted string.
-     *
-     * @param value
-     * @return
-     */
-    private String convertDoubleToCurrency(double value) {
-        String result = String.format("%10.2f", value);
-        result = result.trim();
-        return "€  " + result.replace('.', ',');
-    }
-
 }

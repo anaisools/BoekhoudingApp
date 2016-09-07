@@ -44,7 +44,7 @@ public class Transaction extends Observable {
     // Private functions -------------------------------------------------------
     @Override
     public String toString() {
-        return m_description + ", € " + m_price + ", by " + m_transactor;
+        return m_description + ", " + model.Settings.GetInstance().convertPriceToString(m_price) + " by " + m_transactor.getValue();
     }
 
     /**

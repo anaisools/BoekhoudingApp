@@ -15,6 +15,11 @@ public class Settings {
     private boolean m_saveOnClose;
     private boolean m_minimizeToTray;
 
+    private String m_valutaSign;
+    private boolean m_valutaSignInFront;
+    private boolean m_valutaCommaSeparator;
+    private boolean m_valutaThousandSeparator;
+
     // Private functions -------------------------------------------------------
     /**
      * Create a new XMLFileParser object.
@@ -26,6 +31,10 @@ public class Settings {
             m_autoSave = false;
             m_saveOnClose = false;
             m_minimizeToTray = false;
+            m_valutaSign = "€";
+            m_valutaSignInFront = true;
+            m_valutaCommaSeparator = true;
+            m_valutaThousandSeparator = true;
         }
     }
 
@@ -74,6 +83,32 @@ public class Settings {
         m_minimizeToTray = b;
         writeToFile();
     }
+
+    /**
+     * Converts a number to a valuta representation, according to the user's
+     * settings.
+     *
+     * @param price the number to convert
+     * @return the valuta string representation of the number
+     */
+    public String convertPriceToString(double price) {
+        String p = String.format("%,10.2f", price).trim();
+        if (m_valutaThousandSeparator) {
+            p = p.replace(".", " ");
+        }
+        if (m_valutaCommaSeparator) {
+            p = p.replace(".", ",");
+        } else {
+            p = p.replace(",", ".");
+        }
+        if (m_valutaSignInFront) {
+            p = m_valutaSign + "  " + p;
+        } else {
+            p = p + " " + m_valutaSign;
+        }
+        return p;
+    }
+
     // Singleton ---------------------------------------------------------------
     private static Settings m_instance;
 

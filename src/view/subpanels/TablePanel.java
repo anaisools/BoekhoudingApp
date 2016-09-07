@@ -75,23 +75,19 @@ public class TablePanel extends JPanel {
         for (Pair<String, TRANSACTIONFIELD> p : m_columns) {
             switch (p.getValue()) {
                 case DESCRIPTION:
-                    getColumn(p.getKey()).setPreferredWidth(250);
-                    getColumn(p.getKey()).setMinWidth(100);
+                    getColumn(p.getKey()).setPreferredWidth(270);
                     break;
                 case PRICE:
                     getColumn(p.getKey()).setCellRenderer(new PriceTableCellRenderer());
                     getColumn(p.getKey()).setPreferredWidth(90);
-                    getColumn(p.getKey()).setMinWidth(80);
-                    getColumn(p.getKey()).setMaxWidth(120);
                     break;
                 case DATE_ADDED:
                 case DATE_PAID:
                     getColumn(p.getKey()).setCellRenderer(new DateTableCellRenderer());
+                    getColumn(p.getKey()).setPreferredWidth(100);
                     break;
                 case EXCEPTIONAL:
                     getColumn(p.getKey()).setPreferredWidth(80);
-                    getColumn(p.getKey()).setMinWidth(80);
-                    getColumn(p.getKey()).setMaxWidth(80);
                     break;
 
             }

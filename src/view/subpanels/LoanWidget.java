@@ -25,6 +25,7 @@ public class LoanWidget extends JPanel {
     private JLabel m_title;
     private JLabel m_price;
     private JButton m_buttonCollapse;
+    private JButton m_buttonRemoveAll;
     private ArrayList<JLabel> m_list;
 
     public LoanWidget(CategoryString transactor) {
@@ -36,9 +37,8 @@ public class LoanWidget extends JPanel {
         setActions();
         createUI();
 
-        loadTransactions();
-        updateTotalPrice();
-        setCollapsed(true);
+        m_collapsed = true;
+        update();
     }
 
     public LoanWidget(Transaction t) {
@@ -51,9 +51,8 @@ public class LoanWidget extends JPanel {
         setActions();
         createUI();
 
-        loadTransactions();
-        updateTotalPrice();
-        setCollapsed(true);
+        m_collapsed = true;
+        update();
     }
 
     // Private functions -------------------------------------------------------
@@ -65,6 +64,7 @@ public class LoanWidget extends JPanel {
         m_price = new JLabel("");
         m_buttonCollapse = new JButton("");
         m_list = new ArrayList();
+        m_buttonRemoveAll = new JButton("Payed off");
     }
 
     /**
@@ -91,6 +91,16 @@ public class LoanWidget extends JPanel {
                 setCollapsed(!m_collapsed);
             }
         });
+        m_buttonRemoveAll.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                for (Transaction t : m_transactions) {
+                    t.set(Transaction.TRANSACTIONFIELD.PAYBACK, false);
+                    t.set(Transaction.TRANSACTIONFIELD.PAYBACK_TRANSACTOR, null);
+                }
+                update();
+            }
+        });
     }
 
     /**
@@ -100,13 +110,11 @@ public class LoanWidget extends JPanel {
         CustomGridBag c = new CustomGridBag();
         c.setInsets(10);
 
-        // Title and price
         c.setAnchor(GridBagConstraints.WEST);
         c.add(this, m_title, 0, 0, false, false, 1, 0);
         c.setAnchor(GridBagConstraints.EAST);
+        c.add(this, m_buttonRemoveAll, 1, 0, false, false, 1, 0);
         c.add(this, m_price, 2, 0, false, false, 0, 1);
-
-        // Collapse button
         c.add(this, m_buttonCollapse, 3, 0, false, false, 0, 0);
     }
 
@@ -143,15 +151,13 @@ public class LoanWidget extends JPanel {
         m_transactions = m_transactions.sortByDateAdded();
 
         CustomGridBag c = new CustomGridBag();
-        c.setInsets(5, 5, 30, 10);
 
         // Create labels
         int i = 1;
         for (Transaction t : m_transactions) {
             // Get labels
             String description = (String) t.get(Transaction.TRANSACTIONFIELD.DESCRIPTION);
-            String price = Double.toString((double) t.get(Transaction.TRANSACTIONFIELD.PRICE));
-            price = "€ " + price.replace(".", ",");
+            String price = model.Settings.GetInstance().convertPriceToString((double) t.get(Transaction.TRANSACTIONFIELD.PRICE));
 
             // Add labels to UI
             JLabel label_description = new JLabel(description);
@@ -159,8 +165,12 @@ public class LoanWidget extends JPanel {
             m_list.add(label_description);
             m_list.add(label_price);
             c.setAnchor(GridBagConstraints.WEST);
+            c.setInsets(5, 5, 30, 10);
+            c.setCells(2, 1);
             c.add(this, label_description, 0, i);
             c.setAnchor(GridBagConstraints.EAST);
+            c.setInsets(5, 5, 10, 10);
+            c.setCells(1, 1);
             c.add(this, label_price, 2, i);
             i++;
         }
@@ -174,7 +184,8 @@ public class LoanWidget extends JPanel {
         for (Transaction t : m_transactions) {
             price += (double) t.get(Transaction.TRANSACTIONFIELD.PRICE);
         }
-        m_price.setText("€ " + Double.toString(price).replace(".", ","));
+        m_price.setText(model.Settings.GetInstance().convertPriceToString(price));
+        m_buttonRemoveAll.setVisible(price == 0);
     }
 
     // Public functions --------------------------------------------------------
@@ -185,12 +196,10 @@ public class LoanWidget extends JPanel {
      * @param t
      */
     public void addTransaction(Transaction t) {
-        if (m_transactor.equals((CategoryString) t.get(Transaction.TRANSACTIONFIELD.TRANSACTOR))) {
+        if (m_transactor.equals((CategoryString) t.get(Transaction.TRANSACTIONFIELD.PAYBACK_TRANSACTOR))) {
             m_transactions.add(t);
         }
-        loadTransactions();
-        updateTotalPrice();
-        setCollapsed(m_collapsed);
+        update();
     }
 
     /**
@@ -200,5 +209,14 @@ public class LoanWidget extends JPanel {
      */
     public CategoryString getTransactor() {
         return m_transactor;
+    }
+
+    /**
+     * Force the loan widget to update itself.
+     */
+    public void update() {
+        loadTransactions();
+        updateTotalPrice();
+        setCollapsed(m_collapsed);
     }
 }

@@ -85,13 +85,15 @@ public class LoansList extends JPanel implements Observer {
         Map<CategoryString, LoanWidget> transactorWidgets = new HashMap();
         for (model.Transaction t : m_data) {
             CategoryString transactor = (CategoryString) t.get(Transaction.TRANSACTIONFIELD.PAYBACK_TRANSACTOR);
-            LoanWidget widget = transactorWidgets.get(transactor);
-            if (widget == null) { // does not exist yet
-                widget = new LoanWidget(transactor);
-                transactorWidgets.put(transactor, widget);
-                m_loanWidgets.add(widget);
+            if (transactor != null) {
+                LoanWidget widget = transactorWidgets.get(transactor);
+                if (widget == null) { // does not exist yet
+                    widget = new LoanWidget(transactor);
+                    transactorWidgets.put(transactor, widget);
+                    m_loanWidgets.add(widget);
+                }
+                widget.addTransaction(t);
             }
-            widget.addTransaction(t);
         }
         Collections.sort(m_loanWidgets, new Comparator<LoanWidget>() {
             @Override
