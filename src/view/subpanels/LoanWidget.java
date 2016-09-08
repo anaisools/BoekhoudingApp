@@ -4,7 +4,8 @@ import data.QueryableList;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import javax.swing.*;
 import model.CategoryString;
 import model.Transaction;
@@ -18,6 +19,8 @@ import view.swingextensions.CustomGridBag;
 public class LoanWidget extends JPanel {
 
     // Members & constructor ---------------------------------------------------
+    private final JFrame m_parentFrame;
+
     private final CategoryString m_transactor;
     private QueryableList m_transactions;
     private boolean m_collapsed;
@@ -26,9 +29,10 @@ public class LoanWidget extends JPanel {
     private JLabel m_price;
     private JButton m_buttonCollapse;
     private JButton m_buttonRemoveAll;
-    private ArrayList<JLabel> m_list;
+    private ArrayList<Component> m_list;
 
-    public LoanWidget(CategoryString transactor) {
+    public LoanWidget(JFrame parentFrame, CategoryString transactor) {
+        m_parentFrame = parentFrame;
         m_transactor = transactor;
         m_transactions = new QueryableList();
 
@@ -41,7 +45,8 @@ public class LoanWidget extends JPanel {
         update();
     }
 
-    public LoanWidget(Transaction t) {
+    public LoanWidget(JFrame parentFrame, Transaction t) {
+        m_parentFrame = parentFrame;
         m_transactor = (CategoryString) t.get(Transaction.TRANSACTIONFIELD.TRANSACTOR);
         m_transactions = new QueryableList();
         addTransaction(t);
@@ -113,7 +118,7 @@ public class LoanWidget extends JPanel {
         c.setAnchor(GridBagConstraints.WEST);
         c.add(this, m_title, 0, 0, false, false, 1, 0);
         c.setAnchor(GridBagConstraints.EAST);
-        c.add(this, m_buttonRemoveAll, 1, 0, false, false, 1, 0);
+        c.add(this, m_buttonRemoveAll, 1, 0, false, false, 0, 0);
         c.add(this, m_price, 2, 0, false, false, 0, 1);
         c.add(this, m_buttonCollapse, 3, 0, false, false, 0, 0);
     }
@@ -131,7 +136,7 @@ public class LoanWidget extends JPanel {
         } else {
             m_buttonCollapse.setText("-");
         }
-        for (JLabel l : m_list) {
+        for (Component l : m_list) {
             l.setVisible(!m_collapsed);
         }
     }
@@ -144,34 +149,50 @@ public class LoanWidget extends JPanel {
         if (m_transactions == null || m_list == null) {
             return;
         }
-        for (JLabel l : m_list) {
+        for (Component l : m_list) {
             this.remove(l);
         }
         m_list.clear();
         m_transactions = m_transactions.sortByDateAdded();
 
         CustomGridBag c = new CustomGridBag();
+        SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
 
         // Create labels
         int i = 1;
         for (Transaction t : m_transactions) {
-            // Get labels
+            // Create labels and button
             String description = (String) t.get(Transaction.TRANSACTIONFIELD.DESCRIPTION);
             String price = model.Settings.GetInstance().convertPriceToString((double) t.get(Transaction.TRANSACTIONFIELD.PRICE));
-
-            // Add labels to UI
+            String date = df.format((Date) t.get(Transaction.TRANSACTIONFIELD.DATE_ADDED));
             JLabel label_description = new JLabel(description);
             JLabel label_price = new JLabel(price);
+            JLabel label_date = new JLabel(date);
             m_list.add(label_description);
             m_list.add(label_price);
+            m_list.add(label_date);
+
+            // Add labels to UI
             c.setAnchor(GridBagConstraints.WEST);
-            c.setInsets(5, 5, 30, 10);
-            c.setCells(2, 1);
-            c.add(this, label_description, 0, i);
+            c.add(this, label_description, 0, i, 5, 5, 30, 10);
+            c.setAnchor(GridBagConstraints.CENTER);
+            c.add(this, label_date, 1, i, 5, 5, 10, 10);
             c.setAnchor(GridBagConstraints.EAST);
-            c.setInsets(5, 5, 10, 10);
-            c.setCells(1, 1);
-            c.add(this, label_price, 2, i);
+            c.add(this, label_price, 2, i, 5, 5, 10, 10);
+
+            // create maximize button
+            JButton maximize = new JButton("+");
+            maximize.setPreferredSize(new Dimension(40, 25));
+            maximize.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent ae) {
+                    dialogs.AddEditTransaction dialog = new dialogs.AddEditTransaction(m_parentFrame, t);
+                    dialog.show();
+                }
+            });
+            m_list.add(maximize);
+            c.add(this, maximize, 3, i);
+
             i++;
         }
     }

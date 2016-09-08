@@ -39,7 +39,7 @@ public class LoansPanel extends JPanel implements Observer {
      * Initialize all members.
      */
     private void createComponents() {
-        m_loans = new LoansList();
+        m_loans = new LoansList(m_parentFrame);
     }
 
     /**

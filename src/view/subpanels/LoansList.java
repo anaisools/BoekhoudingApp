@@ -17,13 +17,15 @@ import view.swingextensions.CustomGridBag;
  */
 public class LoansList extends JPanel implements Observer {
 
+    private final JFrame m_parentFrame;
     private JLabel m_title;
     private QueryableList m_data;
     private ArrayList<LoanWidget> m_loanWidgets;
     private JPanel m_loanPanel;
 
     // Constructor -------------------------------------------------------------
-    public LoansList() {
+    public LoansList(JFrame parentFrame) {
+        m_parentFrame = parentFrame;
         Data.GetInstance().addAsObserver(this);
 
         createComponents();
@@ -88,7 +90,7 @@ public class LoansList extends JPanel implements Observer {
             if (transactor != null) {
                 LoanWidget widget = transactorWidgets.get(transactor);
                 if (widget == null) { // does not exist yet
-                    widget = new LoanWidget(transactor);
+                    widget = new LoanWidget(m_parentFrame, transactor);
                     transactorWidgets.put(transactor, widget);
                     m_loanWidgets.add(widget);
                 }

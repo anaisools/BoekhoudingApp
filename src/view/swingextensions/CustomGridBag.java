@@ -28,6 +28,11 @@ public class CustomGridBag {
         panel.add(c, m_gbc);
     }
 
+    public void add(JPanel panel, Component c, int x, int y, int paddingTop, int paddingBottom, int paddingLeft, int paddingRight) {
+        setInsets(paddingTop, paddingBottom, paddingLeft, paddingRight);
+        add(panel, c, x, y);
+    }
+
     public void add(JPanel panel, Component c, int x, int y, boolean hFill, boolean vFill, double xWeight, double yWeight, Insets in) {
         setFill(hFill, vFill);
         setWeight(xWeight, yWeight);
