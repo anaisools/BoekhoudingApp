@@ -1,34 +1,35 @@
 package view.subpanels;
 
-import data.Data;
 import java.awt.*;
 import java.util.*;
 import javafx.util.Pair;
 import javax.swing.*;
 import javax.swing.table.*;
-import model.Transaction;
-import model.Transaction.TRANSACTIONFIELD;
 import view.swingextensions.*;
 
 /**
- * This panel represents a table filled with Transactions. It's placed inside a
- * scrollable JPanel for convenient use.
- *
- * The data in it gets passed along from the parent. A function can be used to
- * change or update the data.
+ * This panel contains a table based on statistics. The statistics should be
+ * passed on to the table from the parent, and also updated likewise. Tables can
+ * contain descriptions (strings) and prices (doubles) and will be formatted
+ * accordingly.
  *
  * @author Anaïs Ools
  */
-public class TablePanel extends JPanel {
+public class StatsTable extends JPanel {
 
-    private ArrayList<Transaction> m_data;
-    private final ArrayList<Pair<String, TRANSACTIONFIELD>> m_columns;
+    private ArrayList<ArrayList<Object>> m_data;
+    private final ArrayList<Pair<String, COLUMNTYPE>> m_columns;
 
     private JTable m_table;
     private JScrollPane m_scrollPane;
 
+    public enum COLUMNTYPE {
+
+        STRING, PRICE
+    };
+
     // Constructors ------------------------------------------------------------
-    public TablePanel(ArrayList<Pair<String, TRANSACTIONFIELD>> columns) {
+    public StatsTable(ArrayList<Pair<String, COLUMNTYPE>> columns) {
         m_data = new ArrayList();
         m_columns = columns;
 
@@ -38,7 +39,7 @@ public class TablePanel extends JPanel {
         createUI();
     }
 
-    public TablePanel(ArrayList<Transaction> data, ArrayList<Pair<String, TRANSACTIONFIELD>> columns) {
+    public StatsTable(ArrayList<ArrayList<Object>> data, ArrayList<Pair<String, COLUMNTYPE>> columns) {
         m_data = data;
         m_columns = columns;
 
@@ -55,7 +56,6 @@ public class TablePanel extends JPanel {
     private void createComponents() {
         m_table = new JTable(createTableFromData());
         //m_table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        m_table.removeColumn(m_table.getColumn("ID")); // hide ID column
         m_scrollPane = new JScrollPane(m_table);
         m_table.setFillsViewportHeight(true);
 
@@ -72,24 +72,15 @@ public class TablePanel extends JPanel {
      */
     private void setPreferences() {
         m_table.setDefaultRenderer(Object.class, new PaddingTableCellRenderer());
-        for (Pair<String, TRANSACTIONFIELD> p : m_columns) {
+        for (Pair<String, COLUMNTYPE> p : m_columns) {
             switch (p.getValue()) {
-                case DESCRIPTION:
-                    getColumn(p.getKey()).setPreferredWidth(270);
+                case STRING:
+                    //getColumn(p.getKey()).setPreferredWidth(270);
                     break;
                 case PRICE:
-                    getColumn(p.getKey()).setCellRenderer(new PriceTableCellRenderer());
-                    getColumn(p.getKey()).setPreferredWidth(90);
+                    getColumn(p.getKey()).setCellRenderer(new PriceTableCellRenderer(true, true));
+                    //getColumn(p.getKey()).setPreferredWidth(90);
                     break;
-                case DATE_ADDED:
-                case DATE_PAID:
-                    getColumn(p.getKey()).setCellRenderer(new DateTableCellRenderer());
-                    getColumn(p.getKey()).setPreferredWidth(100);
-                    break;
-                case EXCEPTIONAL:
-                    getColumn(p.getKey()).setPreferredWidth(80);
-                    break;
-
             }
         }
         //m_table.setFont(new Font("SansSerif", Font.PLAIN, 14));
@@ -122,24 +113,14 @@ public class TablePanel extends JPanel {
      */
     private DefaultTableModel createTableFromData() {
         // Create headers
-        String[] columnNames = new String[m_columns.size() + 1];
-        columnNames[0] = "ID";
+        String[] columnNames = new String[m_columns.size()];
         for (int i = 0; i < m_columns.size(); i++) {
-            columnNames[i + 1] = m_columns.get(i).getKey();
+            columnNames[i] = m_columns.get(i).getKey();
         }
         DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false; // make cells uneditable
-            }
-
-            @Override
-            public Class<?> getColumnClass(int columnIndex) {
-                String columnName = this.getColumnName(columnIndex);
-                if (columnName.equals("Exceptional")) {
-                    return Boolean.class;
-                }
-                return super.getColumnClass(columnIndex);
             }
         };
 
@@ -155,19 +136,8 @@ public class TablePanel extends JPanel {
      * @param tm
      */
     private void insertData(DefaultTableModel tm) {
-        for (Transaction t : m_data) {
-            ArrayList<Object> dataObject = new ArrayList();
-            dataObject.add(t.getID());
-            for (Pair<String, TRANSACTIONFIELD> p : m_columns) {
-                TRANSACTIONFIELD fieldType = p.getValue();
-                Object field = t.get(fieldType);
-                if (field != null && field.getClass().equals(model.CategoryString.class)) {
-                    dataObject.add(((model.CategoryString) field).getValue());
-                } else {
-                    dataObject.add(field);
-                }
-            }
-            tm.addRow(dataObject.toArray());
+        for (ArrayList<Object> a : m_data) {
+            tm.addRow(a.toArray());
         }
     }
 
@@ -198,38 +168,15 @@ public class TablePanel extends JPanel {
     }
 
     // Public functions --------------------------------------------------------
-    public void setData(ArrayList<Transaction> data) {
+    public void setData(ArrayList<ArrayList<Object>> data) {
         m_data = data;
         updateData();
     }
 
-    /**
-     * Return the transaction of a selected row. Return null if no row is
-     * selected.
-     *
-     * @return
-     */
-    public Transaction[] getSelectedTransactions() {
-        // Get selected rows
-        int[] selectedRows = m_table.getSelectedRows();
-        if (selectedRows == null || selectedRows.length == 0) {
-            return null;
+    public void addEntry(ArrayList<Object> entry) {
+        if (m_data != null) {
+            m_data.add(entry);
+            updateData();
         }
-
-        // Get the transactions of these rows
-        Transaction[] transactions = new Transaction[selectedRows.length];
-        for (int i = 0; i < selectedRows.length; i++) {
-            int selectedModelRow = m_table.convertRowIndexToModel(selectedRows[i]);
-            long id = (long) m_table.getModel().getValueAt(selectedModelRow, 0);
-            transactions[i] = Data.GetInstance().getTransactions().get(id);
-        }
-        return transactions;
-    }
-
-    /**
-     * Programmatically scroll the table to the end.
-     */
-    public void scrollDown() {
-        m_table.scrollRectToVisible(m_table.getCellRect(m_table.getRowCount() - 1, 0, true));
     }
 }

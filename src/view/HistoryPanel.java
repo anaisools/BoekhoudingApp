@@ -10,6 +10,7 @@ import javafx.util.Pair;
 import javax.swing.*;
 import model.Transaction.TRANSACTIONFIELD;
 import view.subpanels.*;
+import view.swingextensions.CustomGridBag;
 
 /**
  * This panel fills one of the tabs of the MainWindow. It contains a table with
@@ -25,7 +26,7 @@ public class HistoryPanel extends JPanel implements Observer {
     // Members & constructor ---------------------------------------------------
     private final JFrame m_parentFrame; // needed for opening dialogs that block the frame
 
-    private TablePanel m_tablePanel;
+    private TransactionTable m_tablePanel;
     private OverviewPanel m_yearPanel;
     private JPanel m_buttonPanel;
     private JPanel m_topPanel;
@@ -73,7 +74,7 @@ public class HistoryPanel extends JPanel implements Observer {
         columns.add(new Pair("Date paid", TRANSACTIONFIELD.DATE_PAID));
         columns.add(new Pair("Payment method", TRANSACTIONFIELD.PAYMENT_METHOD));
         columns.add(new Pair("Exceptional", TRANSACTIONFIELD.EXCEPTIONAL));
-        m_tablePanel = new TablePanel(columns);
+        m_tablePanel = new TransactionTable(columns);
 
         // top panel
         m_topPanel = new JPanel();
@@ -143,64 +144,29 @@ public class HistoryPanel extends JPanel implements Observer {
      * Add members to the frame, using layout managers.
      */
     private void createUI() {
-        // set topPanel UI
-        m_topPanel.setLayout(new GridBagLayout());
-        GridBagConstraints c = new GridBagConstraints();
-        c.gridx = 0;
-        c.gridy = 0;
-        c.insets = new Insets(0, 20, 0, 20);
-        m_topPanel.add(m_previousYearButton, c);
-        c.gridx = 1;
-        m_topPanel.add(m_yearLabel, c);
-        c.gridx = 2;
-        m_topPanel.add(m_nextYearButton, c);
+        CustomGridBag c = new CustomGridBag();
 
-        // set buttonPanel UI
-        m_buttonPanel.setLayout(new GridBagLayout());
-        c = new GridBagConstraints();
-        c.gridx = 0;
-        c.gridy = 0;
-        c.insets = new Insets(20, 40, 20, 40);
-        m_buttonPanel.add(m_addButton, c);
-        c.gridx = 1;
-        m_buttonPanel.add(m_editButton, c);
-        c.gridx = 2;
-        m_buttonPanel.add(m_deleteButton, c);
+        // TopPanel
+        c.setInsets(0, 0, 20, 20);
+        c.add(m_topPanel, m_previousYearButton, 0, 0);
+        c.add(m_topPanel, m_yearLabel, 1, 0);
+        c.add(m_topPanel, m_nextYearButton, 2, 0);
 
-        // set general UI
-        this.setLayout(new GridBagLayout());
-        c = new GridBagConstraints();
+        // ButtonPanel
+        c.setInsets(20, 20, 40, 40);
+        c.add(m_buttonPanel, m_addButton, 0, 0);
+        c.add(m_buttonPanel, m_editButton, 1, 0);
+        c.add(m_buttonPanel, m_deleteButton, 2, 0);
 
-        c.fill = GridBagConstraints.BOTH;
-        c.gridx = 0;
-        c.gridy = 0;
-        c.gridwidth = 3;
-        c.weightx = 1.0;
-        c.weighty = 0.1;
-        this.add(m_topPanel, c);
-
-        c.gridx = 0;
-        c.gridy = 1;
-        c.gridwidth = 2;
-        c.weightx = 0.9;
-        c.weighty = 0.7;
-        c.insets = new Insets(0, 20, 0, 0);
-        this.add(m_tablePanel, c);
-
-        c.gridx = 2;
-        c.gridy = 1;
-        c.gridwidth = 1;
-        c.weightx = 0.1;
-        c.weighty = 0.7;
-        c.insets = new Insets(0, 0, 0, 0);
-        this.add(m_yearPanel, c);
-
-        c.gridx = 0;
-        c.gridy = 2;
-        c.gridwidth = 3;
-        c.weightx = 1.0;
-        c.weighty = 0.1;
-        this.add(m_buttonPanel, c);
+        // General
+        c.setCells(3, 1);
+        c.add(this, m_topPanel, 0, 0, true, true, 1, 0.1, 10);
+        c.setCells(2, 1);
+        c.add(this, m_tablePanel, 0, 1, true, true, 0.9, 0.7, 0, 0, 20, 0);
+        c.setCells(1, 1);
+        c.add(this, m_yearPanel, 2, 1, true, true, 0.1, 0.7, 0);
+        c.setCells(3, 1);
+        c.add(this, m_buttonPanel, 0, 2, true, true, 1, 0.1, 0);
     }
 
     /**

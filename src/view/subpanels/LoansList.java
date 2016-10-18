@@ -121,7 +121,7 @@ public class LoansList extends JPanel implements Observer {
         cgb.setAnchor(GridBagConstraints.NORTH);
         cgb.setFill(true, false);
         cgb.setWeight(1, 0);
-        cgb.setInsets(10, 10, 20, 20);
+        cgb.setInsets(10, 10, 10, 10);
         int i;
         for (i = 0; i < m_loanWidgets.size(); i++) {
             cgb.add(m_loanPanel, m_loanWidgets.get(i), 0, i);
@@ -133,6 +133,12 @@ public class LoansList extends JPanel implements Observer {
     }
 
     // Public functions --------------------------------------------------------
+    /**
+     * Update the loans list when the data changes.
+     *
+     * @param o
+     * @param o1
+     */
     @Override
     public void update(Observable o, Object o1) {
         loadData();

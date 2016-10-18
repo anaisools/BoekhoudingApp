@@ -1,6 +1,7 @@
 package boekhoudingxml;
 
 import data.Data;
+import java.io.*;
 import javax.swing.JOptionPane;
 import view.MainWindow;
 
@@ -18,6 +19,19 @@ public class BoekhoudingXML {
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                /* PRINT OUT AND ERR TO FILES FOR BUG FIXING
+                try {
+                    File out = new File(System.getenv("APPDATA") + "\\GhostApps\\BoekhoudingApp\\out.txt");
+                    File err = new File(System.getenv("APPDATA") + "\\GhostApps\\BoekhoudingApp\\err.txt");
+                    FileOutputStream fOut = new FileOutputStream(out);
+                    FileOutputStream fErr = new FileOutputStream(err);
+                    System.setOut(new PrintStream(fOut));
+                    System.setErr(new PrintStream(fErr));
+                } catch (FileNotFoundException ex) {
+                    System.out.println("Cannot open error streams");
+                }
+                */
+
                 BoekhoudingXML b = new BoekhoudingXML();
             }
         });

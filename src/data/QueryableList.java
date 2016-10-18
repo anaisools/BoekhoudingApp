@@ -246,6 +246,21 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
     }
 
     /**
+     * Select all transactions that are loans.
+     *
+     * @return
+     */
+    public QueryableList getLoans() {
+        QueryableList q = new QueryableList();
+        for (Transaction t : this) {
+            if ((boolean) t.get(TRANSACTIONFIELD.PAYBACK)) {
+                q.add(t);
+            }
+        }
+        return q;
+    }
+
+    /**
      * Sort this list according to date added.
      *
      * @return the same list, but sorted.
@@ -306,18 +321,23 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
         return q;
     }
 
-    /**
-     * Select all transactions that are loans.
-     *
-     * @return
-     */
-    public QueryableList getLoans() {
-        QueryableList q = new QueryableList();
+    public HashMap<String, double[]> groupPriceByCategory() {
+        HashMap<String, double[]> result = new HashMap();
         for (Transaction t : this) {
-            if ((boolean) t.get(TRANSACTIONFIELD.PAYBACK)) {
-                q.add(t);
+            String category = (String) t.get(TRANSACTIONFIELD.CATEGORY);
+            double price = (double) t.get(TRANSACTIONFIELD.PRICE);
+            double[] categoryArray = result.get(category);
+            if (categoryArray == null) {
+                categoryArray = new double[2];
             }
+            if (price > 0) {
+                categoryArray[0] += price;
+            } else if (price < 0) {
+                categoryArray[1] += price;
+            }
+            result.put(category, categoryArray);
         }
-        return q;
+        return result;
     }
+
 }

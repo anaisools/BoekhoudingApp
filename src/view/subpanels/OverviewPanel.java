@@ -261,7 +261,7 @@ public class OverviewPanel extends JPanel {
             m_table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             m_table.setRowHeight(19);
             m_table.setDefaultRenderer(Object.class, new PaddingTableCellRenderer());
-            m_table.getColumn(m_table.getColumnName(1)).setCellRenderer(new PriceTableCellRenderer());
+            m_table.getColumn(m_table.getColumnName(1)).setCellRenderer(new PriceTableCellRenderer(true, true));
             if (firstColumnIsMonth) {
                 m_table.getColumn(m_table.getColumnName(0)).setCellRenderer(new PaddingTableCellRenderer() {
                     @Override

@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import javax.swing.*;
+import javax.swing.border.EtchedBorder;
 import model.CategoryString;
 import model.Transaction;
 import view.swingextensions.CustomGridBag;
@@ -77,8 +78,10 @@ public class LoanWidget extends JPanel {
      */
     private void setPreferences() {
         // Color and borders
-        this.setBackground(new Color(255, 227, 132));
-        this.setBorder(BorderFactory.createLineBorder(Color.black));
+        //this.setBackground(new Color(255, 227, 132));
+        this.setBackground(new Color(252, 252, 252));
+        //this.setBorder(BorderFactory.createLineBorder(Color.black));
+        this.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 
         // Fonts
         m_title.setFont(new Font("Tahoma", Font.PLAIN, 16));
