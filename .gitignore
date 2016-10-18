@@ -5,3 +5,8 @@ manifest.mf
 nbproject/private/private.xml
 /dist/
 2016-04-01 16.49.45.jpg
+nbproject/private/*
+nbproject/private/private.properties
+nbproject/project.properties
+*.properties
+Loans screen.png
