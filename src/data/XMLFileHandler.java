@@ -106,7 +106,7 @@ public class XMLFileHandler {
             Path file = Paths.get(m_filesLocation + m_filename);
             Files.write(file, lines, Charset.forName("UTF-8"));
         } catch (IOException ex) {
-            System.out.println(ex.getMessage());
+            System.err.println(ex.getMessage());
             m_fatalError = true;
         }
     }
@@ -182,7 +182,9 @@ public class XMLFileHandler {
      * @param e
      */
     private void parseXMLToString(XElement e) {
-        // TODO: settings etc, non-transaction elements
+        if (e.getName() != null && e.getValue() != null) {
+            m_content.add(new Pair(e.getName(), e.getValue()));
+        }
     }
 
     /**
@@ -298,6 +300,13 @@ public class XMLFileHandler {
     }
 
     /**
+     * Get a list of settings from the file.
+     */
+    public void loadSettings() {
+        readFile();
+    }
+
+    /**
      * Save a list of transactions to the file.
      *
      * @param list
@@ -306,6 +315,25 @@ public class XMLFileHandler {
         ArrayList<String> result = new ArrayList();
         result.add(m_metaData);
         String xml = parseTransactionsToXML(list).toString();
+        for (String s : xml.split("\n")) {
+            result.add(s);
+        }
+        writeToFile(result);
+    }
+
+    /**
+     * Save a list of settings to the file.
+     *
+     * @param list
+     */
+    public void saveSettings(ArrayList<Pair<String, Object>> list) {
+        ArrayList<String> result = new ArrayList();
+        result.add(m_metaData);
+        XElement root = new XElement("data");
+        for (Pair<String, Object> p : list) {
+            root.addChild(new XElement(p.getKey(), String.valueOf(p.getValue())));
+        }
+        String xml = root.toString();
         for (String s : xml.split("\n")) {
             result.add(s);
         }

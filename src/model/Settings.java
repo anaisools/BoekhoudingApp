@@ -1,5 +1,9 @@
 package model;
 
+import data.XMLFileHandler;
+import java.util.*;
+import javafx.util.Pair;
+
 /**
  * Singleton class: only one instance exists. This class loads the settings,
  * using the XMLFileParser class. When the settings are changed, they are
@@ -10,77 +14,136 @@ package model;
 public class Settings {
 
     // Members -----------------------------------------------------------------
-    private boolean m_maximizeWindow;
-    private boolean m_autoSave;
-    private boolean m_saveOnClose;
-    private boolean m_minimizeToTray;
-
-    private String m_valutaSign;
-    private boolean m_valutaSignInFront;
-    private boolean m_valutaCommaSeparator;
-    private boolean m_valutaThousandSeparator;
+    private ArrayList<Pair<String, Object>> m_settings;
+    private ArrayList<Pair<String, Object>> m_fields;
 
     // Private functions -------------------------------------------------------
     /**
      * Create a new XMLFileParser object.
      */
     private void init() {
-        boolean loadingSucceeded = loadFromFile();
-        if (!loadingSucceeded) { // default values
-            m_maximizeWindow = false;
-            m_autoSave = false;
-            m_saveOnClose = false;
-            m_minimizeToTray = false;
-            m_valutaSign = "€";
-            m_valutaSignInFront = true;
-            m_valutaCommaSeparator = true;
-            m_valutaThousandSeparator = true;
+        // set defaults
+        m_fields = new ArrayList();
+        put(m_fields, "maximizeWindow", false);
+        put(m_fields, "autoSave", false);
+        put(m_fields, "saveOnClose", false);
+        put(m_fields, "minimizeToTray", false);
+        put(m_fields, "valutaSign", "€");
+        put(m_fields, "valutaSignInFront", true);
+        put(m_fields, "valutaCommaSeparator", true);
+        put(m_fields, "valutaThousandSeparator", true);
+
+        // load settings
+        m_settings = new ArrayList();
+        loadFromFile();
+
+        // if setting was not loaded: complete with defaults
+        for (Pair<String, Object> p : m_fields) {
+            if (get(m_settings, p.getKey()) == null) {
+                put(m_settings, p.getKey(), p.getValue());
+            }
+        }
+
+        writeToFile();
+    }
+
+    private void loadFromFile() {
+        XMLFileHandler xfh = new XMLFileHandler("settings.xml");
+        xfh.loadSettings();
+        if (xfh.success()) {
+            for (Pair<String, Object> p : xfh.getContent()) {
+                put(m_settings, p.getKey(), p.getValue());
+            }
         }
     }
 
-    private boolean loadFromFile() {
-        // TODO: load from file
-        return false;
+    private void writeToFile() {
+        XMLFileHandler xfh = new XMLFileHandler("settings.xml");
+        if (xfh.success()) {
+            xfh.saveSettings(m_settings);
+        }
     }
 
-    private void writeToFile() {
-        // TODO: write to file
+    private Object get(ArrayList<Pair<String, Object>> list, String key) {
+        for (Pair<String, Object> p : list) {
+            if (p.getKey().equals(key)) {
+                return p.getValue();
+            }
+        }
+        return null;
+    }
+
+    private void put(ArrayList<Pair<String, Object>> list, String key, Object o) {
+        for (int i = 0; i < list.size(); i++) {
+            Pair<String, Object> p = list.get(i);
+            if (p.getKey().equals(key)) {
+                list.remove(i);
+                list.add(i, new Pair(key, o));
+                return;
+            }
+        }
+        list.add(new Pair(key, o));
+        return;
+    }
+
+    private boolean getBoolean(String field) {
+        Object o = get(m_settings, field);
+        if (o == null) {
+            return (boolean) get(m_fields, field);
+        } else if (o.getClass().equals(Boolean.class)) {
+            return (boolean) get(m_settings, field);
+        } else if (o.getClass().equals(String.class)) {
+            return Boolean.parseBoolean((String) o);
+        } else {
+            return (boolean) get(m_fields, field);
+        }
+    }
+
+    private String getString(String field) {
+        Object o = get(m_settings, field);
+        if (o == null) {
+            return (String) get(m_fields, field);
+        } else if (o.getClass().equals(String.class)) {
+            return (String) o;
+        } else {
+            return (String) get(m_fields, field);
+        }
     }
 
     // Public functions --------------------------------------------------------
     public boolean getMaximizeWindow() {
-        return m_maximizeWindow;
+        return getBoolean("maximizeWindow");
     }
 
     public void setMaximizeWindow(boolean b) {
-        m_maximizeWindow = b;
+        put(m_settings, "maximizeWindow", b);
         writeToFile();
     }
 
     public boolean getAutoSave() {
-        return m_autoSave;
+        return getBoolean("autoSave");
     }
 
     public void setAutoSave(boolean b) {
-        m_autoSave = b;
+        put(m_settings, "autoSave", b);
         writeToFile();
     }
 
     public boolean getSaveOnClose() {
-        return m_saveOnClose;
+        return getBoolean("saveOnClose");
     }
 
     public void setSaveOnClose(boolean b) {
-        m_saveOnClose = b;
+        put(m_settings, "saveOnClose", b);
         writeToFile();
     }
 
     public boolean getMinimizeToTray() {
-        return m_minimizeToTray;
+        return getBoolean("minimizeToTray");
     }
 
     public void setMinimizeToTray(boolean b) {
-        m_minimizeToTray = b;
+        put(m_settings, "minimizeToTray", b);
         writeToFile();
     }
 
@@ -93,18 +156,18 @@ public class Settings {
      */
     public String convertPriceToString(double price) {
         String p = String.format("%,10.2f", price).trim();
-        if (m_valutaThousandSeparator) {
+        if (getBoolean("valutaThousandSeparator")) {
             p = p.replace(".", " ");
         }
-        if (m_valutaCommaSeparator) {
+        if (getBoolean("valutaCommaSeparator")) {
             p = p.replace(".", ",");
         } else {
             p = p.replace(",", ".");
         }
-        if (m_valutaSignInFront) {
-            p = m_valutaSign + "  " + p;
+        if (getBoolean("valutaSignInFront")) {
+            p = getString("valutaSign") + "  " + p;
         } else {
-            p = p + " " + m_valutaSign;
+            p = p + " " + getString("valutaSign");
         }
         return p;
     }
