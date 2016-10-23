@@ -23,6 +23,7 @@ public class XMLFileHandler {
 
     private final String m_filename;
     private final String m_filesLocation;
+    private final String m_devLocation;
     private final ArrayList<Pair<String, Object>> m_content;
     private final ArrayList<Transaction> m_transactions;
     private boolean m_fatalError;
@@ -35,7 +36,8 @@ public class XMLFileHandler {
         m_content = new ArrayList();
         m_transactions = new ArrayList();
         m_filename = filename;
-        m_filesLocation = System.getenv("APPDATA") + "\\GhostApps\\BoekhoudingApp\\";
+        m_devLocation = System.getenv("APPDATA") + "\\GhostApps\\";
+        m_filesLocation = m_devLocation + "BoekhoudingApp\\";
 
         if (!fileExists()) {
             createFile();
@@ -64,7 +66,7 @@ public class XMLFileHandler {
             saxParser.parse(m_filesLocation + m_filename, handler);
             parseXMLToObjects(handler.getElements());
         } catch (ParserConfigurationException | org.xml.sax.SAXException | IOException ex) {
-            System.out.println(ex.getMessage());
+            System.err.println(ex.getMessage());
             m_fatalError = true;
         }
     }
@@ -74,9 +76,12 @@ public class XMLFileHandler {
      */
     private void createFile() {
         // create folder if not exists
-        File f = new File(m_filesLocation);
-        if (f.exists() && f.isDirectory()) {
-        } else {
+        File f = new File(m_devLocation);
+        if (!f.exists()) {
+            f.mkdir();
+        }
+        f = new File(m_filesLocation);
+        if (!f.exists()) {
             f.mkdir();
         }
 

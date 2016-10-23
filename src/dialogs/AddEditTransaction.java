@@ -235,6 +235,7 @@ public class AddEditTransaction extends JDialog {
         }
         setLoan((boolean) m_transaction.get(TRANSACTIONFIELD.PAYBACK));
         setJob((boolean) m_transaction.get(TRANSACTIONFIELD.JOB));
+        m_isExceptional.setSelected((boolean) m_transaction.get(TRANSACTIONFIELD.EXCEPTIONAL));
 
         ArrayList<Pair<TRANSACTIONFIELD, ValidationComponent>> fieldsToLoad = new ArrayList();
         fieldsToLoad.addAll(m_fieldsGeneral);
