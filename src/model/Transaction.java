@@ -201,6 +201,7 @@ public class Transaction extends Observable {
                 return CategoryString.class;
             case DATE_ADDED:
             case DATE_PAID:
+            case JOB_DATE:
                 return Date.class;
             case EXCEPTIONAL:
             case PAYBACK:

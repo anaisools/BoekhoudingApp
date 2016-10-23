@@ -40,11 +40,14 @@ public class AddEditTransaction extends JDialog {
 
     private ArrayList<Pair<TRANSACTIONFIELD, ValidationComponent>> m_fieldsGeneral;
     private ArrayList<Pair<TRANSACTIONFIELD, ValidationComponent>> m_fieldsLoans;
+    private ArrayList<Pair<TRANSACTIONFIELD, ValidationComponent>> m_fieldsJob;
 
     private JCheckBox m_isLoan;
     private JPanel m_loansPanel;
     private JCheckBox m_isExceptional;
     private ValidationDateField m_datePaidField;
+    private JCheckBox m_isJob;
+    private JPanel m_jobPanel;
 
     // Constructors ------------------------------------------------------------
     public AddEditTransaction(JFrame parent) {
@@ -59,6 +62,7 @@ public class AddEditTransaction extends JDialog {
         loadData();
 
         setLoan(false);
+        setJob(false);
     }
 
     public AddEditTransaction(JFrame parent, Transaction transactionToEdit) {
@@ -73,6 +77,7 @@ public class AddEditTransaction extends JDialog {
         loadData();
 
         setLoan((boolean) m_transaction.get(TRANSACTIONFIELD.PAYBACK));
+        setJob((boolean) m_transaction.get(TRANSACTIONFIELD.JOB));
     }
 
     // Private functions -------------------------------------------------------
@@ -89,6 +94,7 @@ public class AddEditTransaction extends JDialog {
 
         m_isLoan = new JCheckBox("Add to a transactor's loan account");
         m_isExceptional = new JCheckBox("Exceptional transaction");
+        m_isJob = new JCheckBox("Mark as a job");
 
         // create text values for dropdowns
         String[] categories = Data.GetInstance().getTransactions().getDistinctCategories();
@@ -110,6 +116,11 @@ public class AddEditTransaction extends JDialog {
 
         m_fieldsLoans = new ArrayList();
         m_fieldsLoans.add(new Pair(TRANSACTIONFIELD.PAYBACK_TRANSACTOR, new ValidationComboBox(false, "Loan transactor category > Loan transactor", " > ", transactors)));
+
+        m_fieldsJob = new ArrayList();
+        m_fieldsJob.add(new Pair(TRANSACTIONFIELD.JOB_DATE, new ValidationDateField(false, null, "Job date (dd/mm/yyyy)")));
+        m_fieldsJob.add(new Pair(TRANSACTIONFIELD.JOB_HOURS, new ValidationNumberField(true, "Job hours", true)));
+        m_fieldsJob.add(new Pair(TRANSACTIONFIELD.JOB_WAGE, new ValidationNumberField(true, "Job wage (per hour)", true)));
     }
 
     /**
@@ -143,6 +154,9 @@ public class AddEditTransaction extends JDialog {
         m_isLoan.addItemListener((ItemEvent ie) -> {
             setLoan(m_isLoan.isSelected());
         });
+        m_isJob.addItemListener((ItemEvent ie) -> {
+            setJob(m_isJob.isSelected());
+        });
     }
 
     /**
@@ -152,9 +166,17 @@ public class AddEditTransaction extends JDialog {
      * @return true if all required fields are valid, false if not
      */
     private boolean validateFields() {
-        boolean allValid = true; // assume everything is valid
+        ArrayList<Pair<TRANSACTIONFIELD, ValidationComponent>> fieldsToCheck = new ArrayList();
+        fieldsToCheck.addAll(m_fieldsGeneral);
+        if (m_isLoan.isSelected()) {
+            fieldsToCheck.addAll(m_fieldsLoans);
+        }
+        if (m_isJob.isSelected()) {
+            fieldsToCheck.addAll(m_fieldsJob);
+        }
 
-        for (Pair<TRANSACTIONFIELD, ValidationComponent> p : m_fieldsGeneral) {
+        boolean allValid = true; // assume everything is valid
+        for (Pair<TRANSACTIONFIELD, ValidationComponent> p : fieldsToCheck) {
             ValidationComponent c = p.getValue();
             c.forceValidate();
             if (!c.isValid()) {
@@ -162,15 +184,6 @@ public class AddEditTransaction extends JDialog {
             }
         }
 
-        if (m_isLoan.isSelected()) {
-            for (Pair<TRANSACTIONFIELD, ValidationComponent> p : m_fieldsLoans) {
-                ValidationComponent c = p.getValue();
-                c.forceValidate();
-                if (!c.isValid()) {
-                    allValid = false;
-                }
-            }
-        }
         return allValid;
     }
 
@@ -178,19 +191,23 @@ public class AddEditTransaction extends JDialog {
      * Generate a transaction from the (validated) text fields.
      */
     private void generateTransaction() {
+        ArrayList<Pair<TRANSACTIONFIELD, ValidationComponent>> fieldsToSet = new ArrayList();
+        fieldsToSet.addAll(m_fieldsGeneral);
+        if (m_isLoan.isSelected()) {
+            fieldsToSet.addAll(m_fieldsLoans);
+        }
+        if (m_isJob.isSelected()) {
+            fieldsToSet.addAll(m_fieldsJob);
+        }
         if (m_transaction == null) {
             m_transaction = new Transaction(Data.GetInstance().getTransactions().getNewID());
         }
-        for (Pair<TRANSACTIONFIELD, ValidationComponent> p : m_fieldsGeneral) {
+        for (Pair<TRANSACTIONFIELD, ValidationComponent> p : fieldsToSet) {
             setTransactionFieldFromComponent(p.getKey(), p.getValue());
         }
-        m_transaction.set(TRANSACTIONFIELD.PAYBACK, m_isLoan.isSelected());
-        if (m_isLoan.isSelected()) {
-            for (Pair<TRANSACTIONFIELD, ValidationComponent> p : m_fieldsLoans) {
-                setTransactionFieldFromComponent(p.getKey(), p.getValue());
-            }
-        }
         m_transaction.set(TRANSACTIONFIELD.EXCEPTIONAL, m_isExceptional.isSelected());
+        m_transaction.set(TRANSACTIONFIELD.PAYBACK, m_isLoan.isSelected());
+        m_transaction.set(TRANSACTIONFIELD.JOB, m_isJob.isSelected());
     }
 
     /**
@@ -216,7 +233,19 @@ public class AddEditTransaction extends JDialog {
         if (m_transaction == null) {
             return;
         }
-        for (Pair<TRANSACTIONFIELD, ValidationComponent> pair : m_fieldsGeneral) {
+        setLoan((boolean) m_transaction.get(TRANSACTIONFIELD.PAYBACK));
+        setJob((boolean) m_transaction.get(TRANSACTIONFIELD.JOB));
+
+        ArrayList<Pair<TRANSACTIONFIELD, ValidationComponent>> fieldsToLoad = new ArrayList();
+        fieldsToLoad.addAll(m_fieldsGeneral);
+        if (m_isLoan.isSelected()) {
+            fieldsToLoad.addAll(m_fieldsLoans);
+        }
+        if (m_isJob.isSelected()) {
+            fieldsToLoad.addAll(m_fieldsJob);
+        }
+
+        for (Pair<TRANSACTIONFIELD, ValidationComponent> pair : fieldsToLoad) {
             TRANSACTIONFIELD fieldtype = pair.getKey();
             ValidationComponent component = pair.getValue();
             Object value = m_transaction.get(fieldtype);
@@ -224,18 +253,6 @@ public class AddEditTransaction extends JDialog {
                 value = ((CategoryString) value).toString();
             }
             component.setValue(value);
-        }
-        setLoan((boolean) m_transaction.get(TRANSACTIONFIELD.PAYBACK));
-        if ((boolean) m_transaction.get(TRANSACTIONFIELD.PAYBACK)) {
-            for (Pair<TRANSACTIONFIELD, ValidationComponent> pair : m_fieldsLoans) {
-                TRANSACTIONFIELD fieldtype = pair.getKey();
-                ValidationComponent component = pair.getValue();
-                Object value = m_transaction.get(fieldtype);
-                if (value != null && value.getClass().equals(CategoryString.class)) {
-                    value = ((CategoryString) value).toString();
-                }
-                component.setValue(value);
-            }
         }
     }
 
@@ -262,6 +279,17 @@ public class AddEditTransaction extends JDialog {
     private void setLoan(boolean isLoan) {
         m_isLoan.setSelected(isLoan);
         m_loansPanel.setVisible(isLoan);
+    }
+
+    /**
+     * Set if the dialog should show fields for jobs or not. This also sets the
+     * isJob checkbox.
+     *
+     * @param isJob
+     */
+    private void setJob(boolean isJob) {
+        m_isJob.setSelected(isJob);
+        m_jobPanel.setVisible(isJob);
     }
 
     // UI functions ------------------------------------------------------------
@@ -328,6 +356,16 @@ public class AddEditTransaction extends JDialog {
             cgb.add(m_loansPanel, comp, 0, col);
         }
 
+        // Job
+        m_jobPanel = new JPanel();
+        m_jobPanel.setBorder(BorderFactory.createTitledBorder(" Job "));
+        for (int col = 0; col < m_fieldsJob.size(); col++) {
+            Pair<TRANSACTIONFIELD, ValidationComponent> c = m_fieldsJob.get(col);
+            Component comp = (Component) c.getValue();
+            comp.setPreferredSize(new Dimension(140, 25));
+            cgb.add(m_jobPanel, comp, 0, col);
+        }
+
         // Main panel
         cgb.setWeight(1, 0);
         cgb.setFill(true, false);
@@ -336,6 +374,8 @@ public class AddEditTransaction extends JDialog {
         cgb.add(m_mainPanel, m_isExceptional, 0, pos++);
         cgb.add(m_mainPanel, m_isLoan, 0, pos++);
         cgb.add(m_mainPanel, m_loansPanel, 0, pos++);
+        cgb.add(m_mainPanel, m_isJob, 0, pos++);
+        cgb.add(m_mainPanel, m_jobPanel, 0, pos++);
 
         JPanel filler = new JPanel();
         filler.setOpaque(false);
