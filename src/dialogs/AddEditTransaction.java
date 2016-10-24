@@ -4,6 +4,8 @@ import data.Data;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.*;
 import javafx.util.Pair;
 import javax.swing.*;
@@ -134,6 +136,8 @@ public class AddEditTransaction extends JDialog {
         // center on screen
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         this.setLocation(dim.width / 2 - this.getPreferredSize().width / 2, dim.height / 2 - this.getPreferredSize().height / 2);
+
+        m_scrollPane.getVerticalScrollBar().setUnitIncrement(14);
     }
 
     /**
@@ -156,6 +160,22 @@ public class AddEditTransaction extends JDialog {
         });
         m_isJob.addItemListener((ItemEvent ie) -> {
             setJob(m_isJob.isSelected());
+        });
+        KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+        manager.addPropertyChangeListener("focusOwner", new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (!(evt.getNewValue() instanceof JComponent)) {
+                    return;
+                }
+                JComponent focused = (JComponent) evt.getNewValue();
+                if (m_scrollPane.isAncestorOf(focused)) {
+                    Rectangle bounds = focused.getBounds();
+                    bounds.y -= 35;
+                    bounds.height += 70;
+                    ((JComponent) focused.getParent()).scrollRectToVisible(bounds);
+                }
+            }
         });
     }
 
@@ -220,7 +240,7 @@ public class AddEditTransaction extends JDialog {
     private void setTransactionFieldFromComponent(TRANSACTIONFIELD field, ValidationComponent component) {
         Object content = component.getValue();
         Class preferredClass = m_transaction.getFieldClass(field);
-        if (preferredClass.equals(CategoryString.class) && content.getClass().equals(String.class)) {
+        if (content != null && preferredClass.equals(CategoryString.class) && content.getClass().equals(String.class)) {
             content = new CategoryString((String) content);
         }
         m_transaction.set(field, content);

@@ -24,9 +24,9 @@ public class Settings {
     private void init() {
         // set defaults
         m_fields = new ArrayList();
-        put(m_fields, "maximizeWindow", false);
+        put(m_fields, "maximizeWindow", true);
         put(m_fields, "autoSave", false);
-        put(m_fields, "saveOnClose", false);
+        put(m_fields, "saveOnClose", true);
         put(m_fields, "minimizeToTray", false);
         put(m_fields, "valutaSign", "€");
         put(m_fields, "valutaSignInFront", true);

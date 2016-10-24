@@ -12,7 +12,7 @@ public class Transaction extends Observable {
     // required
     private final long m_id;
     private String m_description;
-    private double m_price;
+    private Double m_price;
     private String m_category;
     private CategoryString m_transactor;
     private Date m_dateAdded;
@@ -28,8 +28,8 @@ public class Transaction extends Observable {
 
     // optional: job
     private boolean m_isJob;
-    private double m_jobHours;
-    private double m_jobWage;
+    private Double m_jobHours;
+    private Double m_jobWage;
     private Date m_jobDate;
 
     public enum TRANSACTIONFIELD {
@@ -135,7 +135,7 @@ public class Transaction extends Observable {
                 m_description = (String) value;
                 break;
             case PRICE:
-                m_price = (double) value;
+                m_price = (Double) value;
                 break;
             case CATEGORY:
                 m_category = (String) value;
@@ -153,22 +153,28 @@ public class Transaction extends Observable {
                 m_paymentMethod = (CategoryString) value;
                 break;
             case EXCEPTIONAL:
-                m_exceptional = (boolean) value;
+                if (value != null) {
+                    m_exceptional = (boolean) value;
+                }
                 break;
             case PAYBACK:
-                m_payback = (boolean) value;
+                if (value != null) {
+                    m_payback = (boolean) value;
+                }
                 break;
             case PAYBACK_TRANSACTOR:
                 m_payBackTransactor = (CategoryString) value;
                 break;
             case JOB:
-                m_isJob = (boolean) value;
+                if (value != null) {
+                    m_isJob = (boolean) value;
+                }
                 break;
             case JOB_HOURS:
-                m_jobHours = (double) value;
+                m_jobHours = (Double) value;
                 break;
             case JOB_WAGE:
-                m_jobWage = (double) value;
+                m_jobWage = (Double) value;
                 break;
             case JOB_DATE:
                 m_jobDate = (Date) value;
