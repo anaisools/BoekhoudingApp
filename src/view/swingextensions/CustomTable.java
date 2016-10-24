@@ -1,11 +1,10 @@
-package view.subpanels;
+package view.swingextensions;
 
 import java.awt.*;
 import java.util.*;
 import javafx.util.Pair;
 import javax.swing.*;
 import javax.swing.table.*;
-import view.swingextensions.*;
 
 /**
  * This panel contains a table based on statistics. The statistics should be
@@ -15,7 +14,7 @@ import view.swingextensions.*;
  *
  * @author Anaïs Ools
  */
-public class StatsTable extends JPanel {
+public class CustomTable extends JPanel {
 
     private ArrayList<ArrayList<Object>> m_data;
     private final ArrayList<Pair<String, COLUMNTYPE>> m_columns;
@@ -25,11 +24,11 @@ public class StatsTable extends JPanel {
 
     public enum COLUMNTYPE {
 
-        STRING, PRICE
+        STRING, PRICE, DOUBLE, DATE, PERCENTAGE
     };
 
     // Constructors ------------------------------------------------------------
-    public StatsTable(ArrayList<Pair<String, COLUMNTYPE>> columns) {
+    public CustomTable(ArrayList<Pair<String, COLUMNTYPE>> columns) {
         m_data = new ArrayList();
         m_columns = columns;
 
@@ -39,7 +38,7 @@ public class StatsTable extends JPanel {
         createUI();
     }
 
-    public StatsTable(ArrayList<ArrayList<Object>> data, ArrayList<Pair<String, COLUMNTYPE>> columns) {
+    public CustomTable(ArrayList<ArrayList<Object>> data, ArrayList<Pair<String, COLUMNTYPE>> columns) {
         m_data = data;
         m_columns = columns;
 
@@ -75,12 +74,18 @@ public class StatsTable extends JPanel {
         for (Pair<String, COLUMNTYPE> p : m_columns) {
             switch (p.getValue()) {
                 case STRING:
-                    //getColumn(p.getKey()).setPreferredWidth(270);
                     break;
                 case PRICE:
                     getColumn(p.getKey()).setCellRenderer(new PriceTableCellRenderer(true, true));
-                    //getColumn(p.getKey()).setPreferredWidth(90);
                     break;
+                case DOUBLE:
+                    getColumn(p.getKey()).setCellRenderer(new NumberTableCellRenderer(2));
+                    break;
+                case DATE:
+                    getColumn(p.getKey()).setCellRenderer(new DateTableCellRenderer());
+                    break;
+                case PERCENTAGE:
+                    getColumn(p.getKey()).setCellRenderer(new NumberTableCellRenderer(2, true));
             }
         }
         //m_table.setFont(new Font("SansSerif", Font.PLAIN, 14));
@@ -177,6 +182,28 @@ public class StatsTable extends JPanel {
         if (m_data != null) {
             m_data.add(entry);
             updateData();
+        }
+    }
+
+    public void setDecimals(String column, int decimals) {
+        for (Pair<String, COLUMNTYPE> p : m_columns) {
+            if (p.getKey().equals(column)) {
+                if (p.getValue() == COLUMNTYPE.DOUBLE) {
+                    getColumn(p.getKey()).setCellRenderer(new NumberTableCellRenderer(decimals));
+                    return;
+                } else if (p.getValue() == COLUMNTYPE.PERCENTAGE) {
+                    getColumn(p.getKey()).setCellRenderer(new NumberTableCellRenderer(decimals, true));
+                    return;
+                }
+            }
+        }
+    }
+
+    public void setColumnWidth(String column, int width) {
+        for (Pair<String, COLUMNTYPE> p : m_columns) {
+            if (p.getKey().equals(column)) {
+                getColumn(p.getKey()).setPreferredWidth(width);
+            }
         }
     }
 }

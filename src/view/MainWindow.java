@@ -22,9 +22,11 @@ public class MainWindow extends JFrame {
     private JLabel m_historyTab;
     private JLabel m_statsTab;
     private JLabel m_loansTab;
+    private JLabel m_jobsTab;
     private JPanel m_historyPanel;
     private JPanel m_statsPanel;
     private JPanel m_loansPanel;
+    private JPanel m_jobsPanel;
 
     private JMenuBar m_menuBar;
 
@@ -61,11 +63,13 @@ public class MainWindow extends JFrame {
         m_historyPanel = new HistoryPanel(this);
         m_statsPanel = new StatsPanel();
         m_loansPanel = new LoansPanel(this);
+        m_jobsPanel = new JobsPanel();
 
         // Add content panels to tabbedPane
         m_tabs.add(m_historyPanel, 0);
         m_tabs.add(m_statsPanel, 1);
         m_tabs.add(m_loansPanel, 2);
+        m_tabs.add(m_jobsPanel, 3);
 
         // Create labels for the tabs
         int iconWidth = 90, iconHeight = 90;
@@ -81,11 +85,16 @@ public class MainWindow extends JFrame {
         m_loansTab.setIcon(getScaledImageIcon("NogNietBetaaldIcon.png", iconWidth, iconHeight));
         m_loansTab.setHorizontalTextPosition(JLabel.CENTER);
         m_loansTab.setVerticalTextPosition(JLabel.BOTTOM);
+        m_jobsTab = new JLabel("Jobs");
+        m_jobsTab.setIcon(getScaledImageIcon("JobsIcon.png", iconWidth, iconHeight));
+        m_jobsTab.setHorizontalTextPosition(JLabel.CENTER);
+        m_jobsTab.setVerticalTextPosition(JLabel.BOTTOM);
 
         // Add labels to tabbedPane
         m_tabs.setTabComponentAt(0, m_historyTab);
         m_tabs.setTabComponentAt(1, m_statsTab);
         m_tabs.setTabComponentAt(2, m_loansTab);
+        m_tabs.setTabComponentAt(3, m_jobsTab);
 
         createMenuBar();
         addMinimizeToTray();
@@ -108,6 +117,7 @@ public class MainWindow extends JFrame {
         m_historyTab.setBorder(BorderFactory.createEmptyBorder(top, left, bottom, right));
         m_statsTab.setBorder(BorderFactory.createEmptyBorder(top, left, bottom, right));
         m_loansTab.setBorder(BorderFactory.createEmptyBorder(top, left, bottom, right));
+        m_jobsTab.setBorder(BorderFactory.createEmptyBorder(top, left, bottom, right));
 
         // Set icon
         java.net.URL url = ClassLoader.getSystemResource("img/AppIcon.png");

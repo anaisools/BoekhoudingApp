@@ -30,17 +30,21 @@ public class PriceTableCellRenderer extends PaddingTableCellRenderer {
 
     @Override
     public void setValue(Object value) {
-        if (value.getClass().equals(Double.class)) {
-            super.setValue(model.Settings.GetInstance().convertPriceToString((double) value));
-        } else if (value.getClass().equals(Integer.class)) {
-            super.setValue(model.Settings.GetInstance().convertPriceToString((double) ((Integer) value)));
+        if (value == null) {
+            value = "";
         }
+        if (value.getClass().equals(Double.class)) {
+            value = model.Settings.GetInstance().convertPriceToString((double) value);
+        } else if (value.getClass().equals(Integer.class)) {
+            value = model.Settings.GetInstance().convertPriceToString((double) ((Integer) value));
+        }
+        super.setValue(value);
     }
 
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         Component cellComponent = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-        if (value.getClass().equals(Double.class)) {
+        if (value != null && value.getClass().equals(Double.class)) {
             double d = (double) value;
             if (m_negativeInRed && d < 0.0) {
                 cellComponent.setForeground(Color.red);

@@ -307,6 +307,29 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
     }
 
     /**
+     * Sort this list according to job date (if present).
+     *
+     * @return the same list, but sorted.
+     */
+    public QueryableList sortByJobDate() {
+        Collections.sort(m_list, new Comparator<Transaction>() {
+            @Override
+            public int compare(Transaction o1, Transaction o2) {
+                if (o1.get(TRANSACTIONFIELD.JOB_DATE) != null && o2.get(TRANSACTIONFIELD.JOB_DATE) != null) {
+                    return ((Date) o1.get(TRANSACTIONFIELD.JOB_DATE)).compareTo((Date) o2.get(TRANSACTIONFIELD.JOB_DATE));
+                } else if (o1.get(TRANSACTIONFIELD.JOB_DATE) != null) {
+                    return -1;
+                } else if (o2.get(TRANSACTIONFIELD.JOB_DATE) != null) {
+                    return 1;
+                } else {
+                    return 1;
+                }
+            }
+        });
+        return this;
+    }
+
+    /**
      * Select all transactions that are not exceptional.
      *
      * @return
@@ -340,4 +363,13 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
         return result;
     }
 
+    public QueryableList selectJobs() {
+        QueryableList q = new QueryableList();
+        for (Transaction t : this) {
+            if ((boolean) t.get(TRANSACTIONFIELD.JOB)) {
+                q.add(t);
+            }
+        }
+        return q;
+    }
 }
