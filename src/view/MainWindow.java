@@ -27,10 +27,13 @@ public class MainWindow extends JFrame {
     private JPanel m_statsPanel;
     private JPanel m_loansPanel;
     private JPanel m_jobsPanel;
+    private boolean m_frameIsMaximized;
 
     private JMenuBar m_menuBar;
+    private JMenuItem m_menuItem_hidePrices;
 
     public MainWindow() {
+        m_frameIsMaximized = Settings.GetInstance().getMaximizeWindow();
 
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -203,6 +206,7 @@ public class MainWindow extends JFrame {
         JMenuItem item_minimizeToTray = new JCheckBoxMenuItem("Minimize to tray");
         JMenuItem item_autoSave = new JCheckBoxMenuItem("Autosave every change");
         JMenuItem item_saveOnClose = new JCheckBoxMenuItem("Save on exit");
+        m_menuItem_hidePrices = new JCheckBoxMenuItem("Hide prices");
 
         item_save.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
         item_save.addActionListener(new DataTriggeredActionListener() {
@@ -234,6 +238,10 @@ public class MainWindow extends JFrame {
         item_saveOnClose.addItemListener((ItemEvent ie) -> {
             Settings.GetInstance().setSaveOnClose(ie.getStateChange() == ItemEvent.SELECTED);
         });
+        m_menuItem_hidePrices.addItemListener((ItemEvent ie) -> {
+            Settings.GetInstance().setPricesVisible(!(ie.getStateChange() == ItemEvent.SELECTED));
+            this.repaint();
+        });
 
         m_menuBar.add(menu_file);
         menu_file.add(item_save);
@@ -246,6 +254,8 @@ public class MainWindow extends JFrame {
         menu_preferences.addSeparator();
         menu_preferences.add(item_autoSave);
         menu_preferences.add(item_saveOnClose);
+        menu_preferences.addSeparator();
+        menu_preferences.add(m_menuItem_hidePrices);
 
         item_maximizeWindow.setSelected(Settings.GetInstance().getMaximizeWindow());
         item_minimizeToTray.setSelected(Settings.GetInstance().getMinimizeToTray());
@@ -266,7 +276,15 @@ public class MainWindow extends JFrame {
             MenuItem item = new MenuItem("Open");
             item.addActionListener((ActionEvent ae) -> {
                 setVisible(true);
-                setExtendedState(JFrame.NORMAL);
+                setExtendedState((m_frameIsMaximized) ? MAXIMIZED_BOTH : NORMAL);
+            });
+            popupMenu.add(item);
+            item = new MenuItem("Open with hidden prices");
+            item.addActionListener((ActionEvent ae) -> {
+                Settings.GetInstance().setPricesVisible(false);
+                m_menuItem_hidePrices.setSelected(true);
+                setVisible(true);
+                setExtendedState((m_frameIsMaximized) ? MAXIMIZED_BOTH : NORMAL);
             });
             popupMenu.add(item);
             popupMenu.addSeparator();
@@ -306,6 +324,11 @@ public class MainWindow extends JFrame {
                     } else if (e.getNewState() == MAXIMIZED_BOTH || e.getNewState() == NORMAL) {
                         SystemTray.getSystemTray().remove(trayIcon);
                         setVisible(true);
+                    }
+                    if (e.getNewState() == MAXIMIZED_BOTH) {
+                        m_frameIsMaximized = true;
+                    } else if (e.getNewState() == NORMAL) {
+                        m_frameIsMaximized = false;
                     }
                 }
             });

@@ -32,6 +32,7 @@ public class Settings {
         put(m_fields, "valutaSignInFront", true);
         put(m_fields, "valutaCommaSeparator", true);
         put(m_fields, "valutaThousandSeparator", true);
+        put(m_fields, "pricesVisible", true);
 
         // load settings
         m_settings = new ArrayList();
@@ -58,9 +59,12 @@ public class Settings {
     }
 
     private void writeToFile() {
-        XMLFileHandler xfh = new XMLFileHandler("settings.xml");
-        if (xfh.success()) {
-            xfh.saveSettings(m_settings);
+        try {
+            XMLFileHandler xfh = new XMLFileHandler("settings.xml");
+            if (xfh.success()) {
+                xfh.saveSettings(m_settings);
+            }
+        } catch (Exception e) {
         }
     }
 
@@ -83,7 +87,7 @@ public class Settings {
             }
         }
         list.add(new Pair(key, o));
-        return;
+        writeToFile();
     }
 
     private boolean getBoolean(String field) {
@@ -117,7 +121,6 @@ public class Settings {
 
     public void setMaximizeWindow(boolean b) {
         put(m_settings, "maximizeWindow", b);
-        writeToFile();
     }
 
     public boolean getAutoSave() {
@@ -126,7 +129,6 @@ public class Settings {
 
     public void setAutoSave(boolean b) {
         put(m_settings, "autoSave", b);
-        writeToFile();
     }
 
     public boolean getSaveOnClose() {
@@ -135,7 +137,6 @@ public class Settings {
 
     public void setSaveOnClose(boolean b) {
         put(m_settings, "saveOnClose", b);
-        writeToFile();
     }
 
     public boolean getMinimizeToTray() {
@@ -144,7 +145,14 @@ public class Settings {
 
     public void setMinimizeToTray(boolean b) {
         put(m_settings, "minimizeToTray", b);
-        writeToFile();
+    }
+
+    public boolean getPricesVisible() {
+        return getBoolean("pricesVisible");
+    }
+
+    public void setPricesVisible(boolean b) {
+        put(m_settings, "pricesVisible", b);
     }
 
     /**

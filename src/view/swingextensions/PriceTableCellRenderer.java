@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Component;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
+import model.Settings;
 
 /**
  * A cell renderer which adds padding to each field and displays the double
@@ -45,13 +46,17 @@ public class PriceTableCellRenderer extends PaddingTableCellRenderer {
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         Component cellComponent = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         if (value != null && value.getClass().equals(Double.class)) {
-            double d = (double) value;
-            if (m_negativeInRed && d < 0.0) {
-                cellComponent.setForeground(Color.red);
-            } else if (m_zeroGreyedOut && d == 0.0) {
-                cellComponent.setForeground(Color.lightGray);
+            if (!Settings.GetInstance().getPricesVisible()) {
+                cellComponent.setForeground(Color.white);
             } else {
-                cellComponent.setForeground(Color.black);
+                double d = (double) value;
+                if (m_negativeInRed && d < 0.0) {
+                    cellComponent.setForeground(Color.red);
+                } else if (m_zeroGreyedOut && d == 0.0) {
+                    cellComponent.setForeground(Color.lightGray);
+                } else {
+                    cellComponent.setForeground(Color.black);
+                }
             }
         }
         return cellComponent;
