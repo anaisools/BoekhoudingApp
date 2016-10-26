@@ -1,7 +1,6 @@
 package view;
 
 import java.awt.*;
-import static java.awt.Frame.NORMAL;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.util.Observable;
@@ -127,7 +126,7 @@ public class MainWindow extends JFrame {
         this.setIconImage(Toolkit.getDefaultToolkit().createImage(url));
 
         // Maximize
-        updateWindowMaximized();
+        this.setExtendedState(Settings.GetInstance().getMaximizeWindow() ? MAXIMIZED_BOTH : NORMAL);
     }
 
     /**
@@ -228,9 +227,11 @@ public class MainWindow extends JFrame {
         });
         item_maximizeWindow.addItemListener((ItemEvent ie) -> {
             Settings.GetInstance().setMaximizeWindow(ie.getStateChange() == ItemEvent.SELECTED);
+            setExtendedState((ie.getStateChange() == ItemEvent.SELECTED) ? MAXIMIZED_BOTH : NORMAL);
         });
         item_minimizeToTray.addItemListener((ItemEvent ie) -> {
             Settings.GetInstance().setMinimizeToTray(ie.getStateChange() == ItemEvent.SELECTED);
+            setExtendedState((ie.getStateChange() != ItemEvent.SELECTED) ? MAXIMIZED_BOTH : NORMAL);
         });
         item_autoSave.addItemListener((ItemEvent ie) -> {
             Settings.GetInstance().setAutoSave(ie.getStateChange() == ItemEvent.SELECTED);
@@ -345,22 +346,8 @@ public class MainWindow extends JFrame {
     private void exit(boolean save) {
         if (save || Settings.GetInstance().getSaveOnClose()) {
             data.Data.GetInstance().saveData();
-            System.out.println("Saving");
-        } else {
-            System.out.println("Not saving");
         }
         System.exit(0);
-    }
-
-    /**
-     * Set the window's maximized state to the option in the settings.
-     */
-    private void updateWindowMaximized() {
-        if (Settings.GetInstance().getMaximizeWindow()) {
-            this.setExtendedState(this.getExtendedState() | JFrame.MAXIMIZED_BOTH);
-        } else {
-            this.setExtendedState(JFrame.NORMAL);
-        }
     }
 
     // Public functions --------------------------------------------------------

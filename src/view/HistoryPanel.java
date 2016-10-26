@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.util.*;
 import javafx.util.Pair;
 import javax.swing.*;
+import model.Settings;
 import model.Transaction.TRANSACTIONFIELD;
 import view.subpanels.*;
 import view.swingextensions.CustomGridBag;
@@ -190,18 +191,24 @@ public class HistoryPanel extends JPanel implements Observer {
      */
     @Override
     public void update(Observable o, Object o1) {
-        if (m_yearPanel.usingDateAdded()) {
+        // Get by date added or paid
+        if (Settings.GetInstance().getUseDateAdded()) {
             m_displayedData = Data.GetInstance().getTransactions().selectDateAddedByYear(m_year);
         } else {
             m_displayedData = Data.GetInstance().getTransactions().selectDatePaidByYear(m_year);
         }
+
         // Update the table
-        m_tablePanel.setData(m_displayedData.toList());
+        if (Settings.GetInstance().getShowHiddenValues()) {
+            m_tablePanel.setData(m_displayedData.toList());
+        } else {
+            m_tablePanel.setData(m_displayedData.selectNonhidden().toList());
+        }
 
         // Update the year-widget
         m_yearPanel.setYear(m_year);
         QueryableList yearData = m_displayedData;
-        if (m_yearPanel.hidingExceptional()) {
+        if (Settings.GetInstance().getHideExceptional()) {
             yearData = yearData.selectUnexceptional();
         }
         m_yearPanel.setData(yearData);

@@ -43,13 +43,17 @@ public class AddEditTransaction extends JDialog {
     private ArrayList<Pair<TRANSACTIONFIELD, ValidationComponent>> m_fieldsGeneral;
     private ArrayList<Pair<TRANSACTIONFIELD, ValidationComponent>> m_fieldsLoans;
     private ArrayList<Pair<TRANSACTIONFIELD, ValidationComponent>> m_fieldsJob;
+    private ArrayList<Pair<TRANSACTIONFIELD, ValidationComponent>> m_fieldsHidden;
 
     private JCheckBox m_isLoan;
     private JPanel m_loansPanel;
     private JCheckBox m_isExceptional;
-    private ValidationDateField m_datePaidField;
     private JCheckBox m_isJob;
     private JPanel m_jobPanel;
+    private JCheckBox m_isHidden;
+    private JPanel m_hiddenPanel;
+
+    private ValidationDateField m_datePaidField;
 
     // Constructors ------------------------------------------------------------
     public AddEditTransaction(JFrame parent) {
@@ -97,6 +101,7 @@ public class AddEditTransaction extends JDialog {
         m_isLoan = new JCheckBox("Add to a transactor's loan account");
         m_isExceptional = new JCheckBox("Exceptional transaction");
         m_isJob = new JCheckBox("Mark as a job");
+        m_isHidden = new JCheckBox("Hide transaction from the main table");
 
         // create text values for dropdowns
         String[] categories = Data.GetInstance().getTransactions().getDistinctCategories();
@@ -123,6 +128,9 @@ public class AddEditTransaction extends JDialog {
         m_fieldsJob.add(new Pair(TRANSACTIONFIELD.JOB_DATE, new ValidationDateField(false, null, "Job date (dd/mm/yyyy)")));
         m_fieldsJob.add(new Pair(TRANSACTIONFIELD.JOB_HOURS, new ValidationNumberField(true, "Job hours", true)));
         m_fieldsJob.add(new Pair(TRANSACTIONFIELD.JOB_WAGE, new ValidationNumberField(true, "Job wage (per hour)", true)));
+
+        m_fieldsHidden = new ArrayList();
+        m_fieldsHidden.add(new Pair(TRANSACTIONFIELD.HIDDEN_DATE, new ValidationDateField(true, null, "Keep transaction hidden until (dd/mm/yyyy) - can be empty")));
     }
 
     /**
@@ -161,6 +169,9 @@ public class AddEditTransaction extends JDialog {
         m_isJob.addItemListener((ItemEvent ie) -> {
             setJob(m_isJob.isSelected());
         });
+        m_isHidden.addItemListener((ItemEvent ie) -> {
+            setHidden(m_isHidden.isSelected());
+        });
         KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
         manager.addPropertyChangeListener("focusOwner", new PropertyChangeListener() {
             @Override
@@ -194,6 +205,9 @@ public class AddEditTransaction extends JDialog {
         if (m_isJob.isSelected()) {
             fieldsToCheck.addAll(m_fieldsJob);
         }
+        if (m_isHidden.isSelected()) {
+            fieldsToCheck.addAll(m_fieldsHidden);
+        }
 
         boolean allValid = true; // assume everything is valid
         for (Pair<TRANSACTIONFIELD, ValidationComponent> p : fieldsToCheck) {
@@ -219,6 +233,9 @@ public class AddEditTransaction extends JDialog {
         if (m_isJob.isSelected()) {
             fieldsToSet.addAll(m_fieldsJob);
         }
+        if (m_isHidden.isSelected()) {
+            fieldsToSet.addAll(m_fieldsHidden);
+        }
         if (m_transaction == null) {
             m_transaction = new Transaction(Data.GetInstance().getTransactions().getNewID());
         }
@@ -228,6 +245,7 @@ public class AddEditTransaction extends JDialog {
         m_transaction.set(TRANSACTIONFIELD.EXCEPTIONAL, m_isExceptional.isSelected());
         m_transaction.set(TRANSACTIONFIELD.PAYBACK, m_isLoan.isSelected());
         m_transaction.set(TRANSACTIONFIELD.JOB, m_isJob.isSelected());
+        m_transaction.set(TRANSACTIONFIELD.HIDDEN, m_isHidden.isSelected());
     }
 
     /**
@@ -255,6 +273,7 @@ public class AddEditTransaction extends JDialog {
         }
         setLoan((boolean) m_transaction.get(TRANSACTIONFIELD.PAYBACK));
         setJob((boolean) m_transaction.get(TRANSACTIONFIELD.JOB));
+        setHidden((boolean) m_transaction.get(TRANSACTIONFIELD.HIDDEN));
         m_isExceptional.setSelected((boolean) m_transaction.get(TRANSACTIONFIELD.EXCEPTIONAL));
 
         ArrayList<Pair<TRANSACTIONFIELD, ValidationComponent>> fieldsToLoad = new ArrayList();
@@ -264,6 +283,9 @@ public class AddEditTransaction extends JDialog {
         }
         if (m_isJob.isSelected()) {
             fieldsToLoad.addAll(m_fieldsJob);
+        }
+        if (m_isHidden.isSelected()) {
+            fieldsToLoad.addAll(m_fieldsHidden);
         }
 
         for (Pair<TRANSACTIONFIELD, ValidationComponent> pair : fieldsToLoad) {
@@ -311,6 +333,17 @@ public class AddEditTransaction extends JDialog {
     private void setJob(boolean isJob) {
         m_isJob.setSelected(isJob);
         m_jobPanel.setVisible(isJob);
+    }
+
+    /**
+     * Set if the dialog should show fields for hiding or not. This also sets
+     * the isHidden checkbox.
+     *
+     * @param isHidden
+     */
+    private void setHidden(boolean isHidden) {
+        m_isHidden.setSelected(isHidden);
+        m_hiddenPanel.setVisible(isHidden);
     }
 
     // UI functions ------------------------------------------------------------
@@ -387,6 +420,16 @@ public class AddEditTransaction extends JDialog {
             cgb.add(m_jobPanel, comp, 0, col);
         }
 
+        // Hiding
+        m_hiddenPanel = new JPanel();
+        m_hiddenPanel.setBorder(BorderFactory.createTitledBorder(" Hiding "));
+        for (int col = 0; col < m_fieldsHidden.size(); col++) {
+            Pair<TRANSACTIONFIELD, ValidationComponent> c = m_fieldsHidden.get(col);
+            Component comp = (Component) c.getValue();
+            comp.setPreferredSize(new Dimension(140, 25));
+            cgb.add(m_hiddenPanel, comp, 0, col);
+        }
+
         // Main panel
         cgb.setWeight(1, 0);
         cgb.setFill(true, false);
@@ -397,45 +440,13 @@ public class AddEditTransaction extends JDialog {
         cgb.add(m_mainPanel, m_loansPanel, 0, pos++);
         cgb.add(m_mainPanel, m_isJob, 0, pos++);
         cgb.add(m_mainPanel, m_jobPanel, 0, pos++);
+        cgb.add(m_mainPanel, m_isHidden, 0, pos++);
+        cgb.add(m_mainPanel, m_hiddenPanel, 0, pos++);
 
         JPanel filler = new JPanel();
         filler.setOpaque(false);
         cgb.add(m_mainPanel, filler, 0, pos++, true, false, 1, 1);
 
-    }
-
-    /**
-     * Add a component to a JPanel with certain layout parameters.
-     *
-     * @param panel
-     * @param hFill
-     * @param vFill
-     * @param in
-     * @param x
-     * @param y
-     * @param xFill
-     * @param yFill
-     * @param o the component to add
-     */
-    private void addWithGridBagConstraints(JPanel panel, boolean hFill, boolean vFill, Insets in, int x, int y, int xFill, int yFill, Component o) {
-        if (panel.getLayout().getClass() != GridBagLayout.class) {
-            panel.setLayout(new GridBagLayout());
-        }
-        GridBagConstraints c = new GridBagConstraints();
-        c.anchor = GridBagConstraints.NORTH;
-        if (hFill && vFill) {
-            c.fill = GridBagConstraints.BOTH;
-        } else if (hFill) {
-            c.fill = GridBagConstraints.HORIZONTAL;
-        } else if (vFill) {
-            c.fill = GridBagConstraints.VERTICAL;
-        }
-        c.insets = in;
-        c.gridx = x;
-        c.gridy = y;
-        c.weightx = xFill;
-        c.weighty = yFill;
-        panel.add(o, c);
     }
 
     // Public functions --------------------------------------------------------

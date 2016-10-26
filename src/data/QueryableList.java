@@ -344,6 +344,27 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
         return q;
     }
 
+    /**
+     * Select all transactions that are not hidden.
+     *
+     * @return
+     */
+    public QueryableList selectNonhidden() {
+        QueryableList q = new QueryableList();
+        Date today = new Date();
+        for (Transaction t : this) {
+            if (((boolean) t.get(TRANSACTIONFIELD.HIDDEN))) {
+                Date d = (Date) t.get(TRANSACTIONFIELD.HIDDEN_DATE);
+                if (d != null && !d.after(today)) {
+                    q.add(t);
+                }
+            } else {
+                q.add(t);
+            }
+        }
+        return q;
+    }
+
     public HashMap<String, double[]> groupPriceByCategory() {
         HashMap<String, double[]> result = new HashMap();
         for (Transaction t : this) {

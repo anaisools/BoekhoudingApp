@@ -9,6 +9,7 @@ import java.util.*;
 import javafx.util.Pair;
 import javax.swing.*;
 import javax.swing.table.*;
+import model.Settings;
 import view.HistoryPanel;
 import view.swingextensions.*;
 
@@ -32,6 +33,7 @@ public class OverviewPanel extends JPanel {
     private SmallTable<String, Double> m_monthAvgTable;
     private JCheckBox m_hideExceptional;
     private JCheckBox m_useDateAdded;
+    private JCheckBox m_showHidden;
 
     // Constructors ------------------------------------------------------------
     public OverviewPanel(HistoryPanel parent) {
@@ -90,7 +92,11 @@ public class OverviewPanel extends JPanel {
         m_monthAvgTable.add("Average", 0.0);
 
         m_hideExceptional = new JCheckBox("Hide exceptional");
+        m_hideExceptional.setSelected(Settings.GetInstance().getHideExceptional());
         m_useDateAdded = new JCheckBox("Use date added ");
+        m_useDateAdded.setSelected(Settings.GetInstance().getUseDateAdded());
+        m_showHidden = new JCheckBox("Show hidden    ");
+        m_showHidden.setSelected(Settings.GetInstance().getShowHiddenValues());
     }
 
     /**
@@ -105,17 +111,17 @@ public class OverviewPanel extends JPanel {
      * Set actions for members of the frame.
      */
     private void setActions() {
-        m_hideExceptional.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent ie) {
-                m_parent.update(null, null);
-            }
+        m_hideExceptional.addItemListener((ItemEvent ie) -> {
+            Settings.GetInstance().setHideExceptional(m_hideExceptional.isSelected());
+            m_parent.update(null, null);
         });
-        m_useDateAdded.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent ie) {
-                m_parent.update(null, null);
-            }
+        m_useDateAdded.addItemListener((ItemEvent ie) -> {
+            Settings.GetInstance().setUseDateAdded(m_useDateAdded.isSelected());
+            m_parent.update(null, null);
+        });
+        m_showHidden.addItemListener((ItemEvent ie) -> {
+            Settings.GetInstance().setShowHiddenValues(m_showHidden.isSelected());
+            m_parent.update(null, null);
         });
     }
 
@@ -123,7 +129,7 @@ public class OverviewPanel extends JPanel {
      * Add members to the frame, using layout managers.
      */
     private void createUI() {
-        Insets in = new Insets(20, 20, 20, 20); // top left bottom right
+        Insets in = new Insets(15, 20, 15, 20); // top left bottom right
 
         addWithGridBagConstraints(this, false, true, in, 0, 0, 1, 0, m_title);
         addWithGridBagConstraints(this, false, true, in, 0, 1, 1, 0, m_yearTable);
@@ -131,7 +137,8 @@ public class OverviewPanel extends JPanel {
         addWithGridBagConstraints(this, false, true, in, 0, 3, 1, 0, m_monthAvgTable);
 
         addWithGridBagConstraints(this, false, false, new Insets(20, 20, 5, 20), 0, 4, 0, 0, m_hideExceptional);
-        addWithGridBagConstraints(this, false, false, new Insets(5, 20, 20, 20), 0, 5, 0, 0, m_useDateAdded);
+        addWithGridBagConstraints(this, false, false, new Insets(5, 20, 5, 20), 0, 5, 0, 0, m_useDateAdded);
+        addWithGridBagConstraints(this, false, false, new Insets(5, 20, 20, 20), 0, 6, 0, 0, m_showHidden);
     }
 
     /**
@@ -145,7 +152,7 @@ public class OverviewPanel extends JPanel {
         // update month
         double[] months = new double[12];
         for (int i = 0; i < 12; i++) {
-            if (usingDateAdded()) {
+            if (Settings.GetInstance().getUseDateAdded()) {
                 months[i] = m_data.selectDateAddedByMonth(i).getTotalPrice();
             } else {
                 months[i] = m_data.selectDatePaidByMonth(i).getTotalPrice();
@@ -213,24 +220,6 @@ public class OverviewPanel extends JPanel {
      */
     public void setYear(int year) {
         m_year = year;
-    }
-
-    /**
-     * Check if the displayed data should display exceptional entries or not.
-     *
-     * @return
-     */
-    public boolean hidingExceptional() {
-        return m_hideExceptional.isSelected();
-    }
-
-    /**
-     * Check if the displayed data should display exceptional entries or not.
-     *
-     * @return
-     */
-    public boolean usingDateAdded() {
-        return m_useDateAdded.isSelected();
     }
 
     // Private classes ---------------------------------------------------------

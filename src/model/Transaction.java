@@ -21,6 +21,8 @@ public class Transaction extends Observable {
     // optional
     private Date m_datePaid;
     private boolean m_exceptional;
+    private boolean m_hidden;
+    private Date m_hiddenDate;
 
     // optional: payback
     private boolean m_payback;
@@ -36,7 +38,7 @@ public class Transaction extends Observable {
 
         DESCRIPTION, PRICE, CATEGORY, TRANSACTOR, DATE_ADDED, DATE_PAID,
         PAYMENT_METHOD, EXCEPTIONAL, PAYBACK, PAYBACK_TRANSACTOR, JOB, JOB_HOURS,
-        JOB_WAGE, JOB_DATE
+        JOB_WAGE, JOB_DATE, HIDDEN, HIDDEN_DATE
     };
 
     public Transaction(long id) {
@@ -113,6 +115,10 @@ public class Transaction extends Observable {
                 return m_jobWage;
             case JOB_DATE:
                 return m_jobDate;
+            case HIDDEN:
+                return m_hidden;
+            case HIDDEN_DATE:
+                return m_hiddenDate;
             default:
                 return null;
         }
@@ -179,6 +185,13 @@ public class Transaction extends Observable {
             case JOB_DATE:
                 m_jobDate = (Date) value;
                 break;
+            case HIDDEN:
+                if (value != null) {
+                    m_hidden = (boolean) value;
+                }
+                break;
+            case HIDDEN_DATE:
+                m_hiddenDate = (Date) value;
         }
         notifyObserversOfChange();
     }
@@ -208,10 +221,12 @@ public class Transaction extends Observable {
             case DATE_ADDED:
             case DATE_PAID:
             case JOB_DATE:
+            case HIDDEN_DATE:
                 return Date.class;
             case EXCEPTIONAL:
             case PAYBACK:
             case JOB:
+            case HIDDEN:
                 return Boolean.class;
             default:
                 return null;
@@ -281,6 +296,9 @@ public class Transaction extends Observable {
             list.remove(TRANSACTIONFIELD.JOB_HOURS);
             list.remove(TRANSACTIONFIELD.JOB_WAGE);
             list.remove(TRANSACTIONFIELD.JOB_DATE);
+        }
+        if (!m_hidden) {
+            list.remove(TRANSACTIONFIELD.HIDDEN_DATE);
         }
         return list;
     }

@@ -33,6 +33,9 @@ public class Settings {
         put(m_fields, "valutaCommaSeparator", true);
         put(m_fields, "valutaThousandSeparator", true);
         put(m_fields, "pricesVisible", true);
+        put(m_fields, "showHiddenValues", true);
+        put(m_fields, "useDateAdded", false);
+        put(m_fields, "hideExceptional", false);
 
         // load settings
         m_settings = new ArrayList();
@@ -83,6 +86,7 @@ public class Settings {
             if (p.getKey().equals(key)) {
                 list.remove(i);
                 list.add(i, new Pair(key, o));
+                writeToFile();
                 return;
             }
         }
@@ -153,6 +157,30 @@ public class Settings {
 
     public void setPricesVisible(boolean b) {
         put(m_settings, "pricesVisible", b);
+    }
+
+    public boolean getShowHiddenValues() {
+        return getBoolean("showHiddenValues");
+    }
+
+    public void setShowHiddenValues(boolean b) {
+        put(m_settings, "showHiddenValues", b);
+    }
+
+    public boolean getUseDateAdded() {
+        return getBoolean("useDateAdded");
+    }
+
+    public void setUseDateAdded(boolean b) {
+        put(m_settings, "useDateAdded", b);
+    }
+
+    public boolean getHideExceptional() {
+        return getBoolean("hideExceptional");
+    }
+
+    public void setHideExceptional(boolean b) {
+        put(m_settings, "hideExceptional", b);
     }
 
     /**
