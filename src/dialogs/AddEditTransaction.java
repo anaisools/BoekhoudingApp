@@ -69,6 +69,7 @@ public class AddEditTransaction extends JDialog {
 
         setLoan(false);
         setJob(false);
+        setHidden(false);
     }
 
     public AddEditTransaction(JFrame parent, Transaction transactionToEdit) {
@@ -84,6 +85,7 @@ public class AddEditTransaction extends JDialog {
 
         setLoan((boolean) m_transaction.get(TRANSACTIONFIELD.PAYBACK));
         setJob((boolean) m_transaction.get(TRANSACTIONFIELD.JOB));
+        setHidden((boolean) m_transaction.get(TRANSACTIONFIELD.HIDDEN));
     }
 
     // Private functions -------------------------------------------------------

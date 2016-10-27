@@ -1,6 +1,7 @@
 package data;
 
 import java.util.*;
+import model.Settings;
 
 /**
  * Singleton class: only one instance exists. This class loads the data, using
@@ -76,7 +77,12 @@ public class Data extends Observable implements Observer {
     @Override
     public void update(Observable o, Object o1) {
         m_dataHasChanged = true;
-        notifyObserversOfChange();
+        if (Settings.GetInstance().getAutoSave()) {
+            saveData();
+        } else {
+            notifyObserversOfChange();
+        }
+
     }
 
     /**

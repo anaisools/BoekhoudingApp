@@ -146,7 +146,7 @@ public class XMLFileHandler {
             Object value = child.getValue();
             if (!name.equals("ID")) {
                 TRANSACTIONFIELD field = t.stringToTransactionField(name);
-                if (field == null && !name.equals("ID")) {
+                if (field == null) {
                     System.out.println("Transaction " + id + " has invalid field \"" + name + "\" and was not parsed.");
                     return;
                 }
@@ -165,9 +165,9 @@ public class XMLFileHandler {
             }
         }
         if (requiredFields.size() > 0) { // not all required fields were found
-            System.out.println("Transaction " + id + " does not contain required field(s): ");
+            System.out.print("Transaction " + id + " does not contain required field(s): ");
             for (TRANSACTIONFIELD field : requiredFields) {
-                System.out.println("\"" + field.toString().toLowerCase() + "\" ");
+                System.out.print("\"" + field.toString().toLowerCase() + "\" ");
             }
             System.out.println("and was not parsed.");
             return;
@@ -223,6 +223,9 @@ public class XMLFileHandler {
      * @return
      */
     private String objectToString(Object o) {
+        if (o == null) {
+            return "";
+        }
         if (o.getClass().equals(CategoryString.class)) {
             o = ((CategoryString) o).toString();
         }
