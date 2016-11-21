@@ -23,7 +23,7 @@ public class XMLFileHandler {
 
     private final String m_filename;
     private final String m_filesLocation;
-    private final String m_devLocation;
+    // private final String m_devLocation;
     private final ArrayList<Pair<String, Object>> m_content;
     private final ArrayList<Transaction> m_transactions;
     private boolean m_fatalError;
@@ -36,8 +36,22 @@ public class XMLFileHandler {
         m_content = new ArrayList();
         m_transactions = new ArrayList();
         m_filename = filename;
-        m_devLocation = System.getenv("APPDATA") + "\\GhostApps\\";
-        m_filesLocation = m_devLocation + "BoekhoudingApp\\";
+        m_filesLocation = System.getenv("APPDATA") + "\\GhostApps\\BoekhoudingApp\\";
+
+        if (!fileExists()) {
+            createFile();
+        }
+    }
+
+    public XMLFileHandler(String fileLocation, String filename) {
+        m_fatalError = false;
+        m_content = new ArrayList();
+        m_transactions = new ArrayList();
+        m_filename = filename;
+        if (!fileLocation.endsWith("\\")) {
+            fileLocation += "\\";
+        }
+        m_filesLocation = fileLocation;
 
         if (!fileExists()) {
             createFile();
@@ -76,23 +90,35 @@ public class XMLFileHandler {
      */
     private void createFile() {
         // create folder if not exists
-        File f = new File(m_devLocation);
-        if (!f.exists()) {
-            f.mkdir();
-        }
-        f = new File(m_filesLocation);
-        if (!f.exists()) {
-            f.mkdir();
-        }
+        createFolder(m_filesLocation);
 
         // create file if not exists
-        f = new File(m_filesLocation + m_filename);
+        File f = new File(m_filesLocation + m_filename);
         if (f.exists() && !f.isDirectory()) {
         } else {
             ArrayList<String> lines = new ArrayList();
             lines.add(m_metaData);
             lines.add("<data>\n</data>");
             writeToFile(lines);
+        }
+    }
+
+    /**
+     * Create a folder if it does not exist. If it already exists, nothing will
+     * happen. Non-existing parent folders will be recursively created.
+     *
+     * @param fileLocation
+     */
+    private void createFolder(String fileLocation) {
+        while (fileLocation.charAt(fileLocation.length() - 1) == '\\') {
+            fileLocation = fileLocation.substring(0, fileLocation.length() - 1);
+        }
+        File f = new File(fileLocation);
+        if (!f.exists()) {
+            String parentFolder = fileLocation.substring(0, fileLocation.lastIndexOf("\\"));
+            createFolder(parentFolder);
+            f.mkdir();
+            System.out.println("Creating folder " + fileLocation);
         }
     }
 

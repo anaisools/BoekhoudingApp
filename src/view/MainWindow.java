@@ -3,6 +3,7 @@ package view;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.*;
@@ -199,7 +200,9 @@ public class MainWindow extends JFrame {
         JMenu menu_file = new JMenu(" File ");
         JMenuItem item_save = new JMenuItem("Save");
         JMenuItem item_savequit = new JMenuItem("Save and quit");
+        JMenuItem item_changeSaveFileLocation = new JMenuItem("Change save file location");
         JMenuItem item_exit = new JMenuItem("Exit");
+
         JMenu menu_preferences = new JMenu(" Preferences ");
         JMenuItem item_maximizeWindow = new JCheckBoxMenuItem("Maximize window on start");
         JMenuItem item_minimizeToTray = new JCheckBoxMenuItem("Minimize to tray");
@@ -221,6 +224,19 @@ public class MainWindow extends JFrame {
         });
         item_savequit.addActionListener((ActionEvent ae) -> {
             exit(true);
+        });
+        item_changeSaveFileLocation.addActionListener((ActionEvent ae) -> {
+            String oldLocation = Settings.GetInstance().getSaveFileLocation();
+            String newLocation = openFolderChooser(Settings.GetInstance().getSaveFileLocation());
+            if (newLocation != null) {
+                Settings.GetInstance().setSaveFileLocation(newLocation);
+                data.Data.GetInstance().reloadData();
+                if (!data.Data.GetInstance().loadingDataSucceeded()) {
+                    JOptionPane.showMessageDialog(null, "Loading data from this location failed. The old location will be used instead.", "Error", JOptionPane.ERROR_MESSAGE);
+                    Settings.GetInstance().setSaveFileLocation(oldLocation);
+                    data.Data.GetInstance().reloadData();
+                }
+            }
         });
         item_exit.addActionListener((ActionEvent ae) -> {
             exit(false);
@@ -247,6 +263,7 @@ public class MainWindow extends JFrame {
         m_menuBar.add(menu_file);
         menu_file.add(item_save);
         menu_file.add(item_savequit);
+        menu_file.add(item_changeSaveFileLocation);
         menu_file.addSeparator();
         menu_file.add(item_exit);
         m_menuBar.add(menu_preferences);
@@ -262,6 +279,30 @@ public class MainWindow extends JFrame {
         item_minimizeToTray.setSelected(Settings.GetInstance().getMinimizeToTray());
         item_autoSave.setSelected(Settings.GetInstance().getAutoSave());
         item_saveOnClose.setSelected(Settings.GetInstance().getSaveOnClose());
+    }
+
+    /**
+     * Open a dialog that allows user to pick a folder. Returns the path of the
+     * resulting folder as a string.
+     *
+     * @param defaultLocation
+     * @return
+     */
+    private String openFolderChooser(String defaultLocation) {
+        JFileChooser fc = new JFileChooser();
+        fc.setCurrentDirectory(new File(defaultLocation));
+        fc.setDialogTitle("Choose a folder for the save file");
+        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        fc.setAcceptAllFileFilterUsed(false);
+
+        if (fc.showDialog(this, "Choose folder") == JFileChooser.APPROVE_OPTION) {
+            // System.out.println("getCurrentDirectory(): " + fc.getCurrentDirectory());
+            // System.out.println("getSelectedFile() : " + fc.getSelectedFile());
+            return fc.getSelectedFile().getAbsolutePath();
+        } else {
+            // System.out.println("No folder selected");
+        }
+        return null;
     }
 
     /**

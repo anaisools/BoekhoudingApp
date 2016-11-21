@@ -22,16 +22,24 @@ public class Data extends Observable implements Observer {
     private QueryableList m_transactions;
     private boolean m_loadingDataSucceeded;
     private boolean m_dataHasChanged;
+    private boolean m_saving;
 
     // Private functions -------------------------------------------------------
     /**
      * Create a new XMLFileParser object.
      */
     private void init() {
+        loadData();
+    }
+
+    /**
+     * Load the data using an XMLFileParser object.
+     */
+    private void loadData() {
         m_loadingDataSucceeded = true;
         m_dataHasChanged = false;
 
-        XMLFileHandler xfh = new XMLFileHandler("data.xml");
+        XMLFileHandler xfh = new XMLFileHandler(Settings.GetInstance().getSaveFileLocation(), "data.xml");
         xfh.loadTransactions();
         if (!xfh.success()) {
             m_loadingDataSucceeded = false;
@@ -98,13 +106,33 @@ public class Data extends Observable implements Observer {
      * Saves the data to the XML file.
      */
     public void saveData() {
-        XMLFileHandler xfh = new XMLFileHandler("data.xml");
-        if (!xfh.success()) {
-            m_dataHasChanged = true;
-        } else {
-            xfh.saveTransactions(m_transactions.sortByDatePaid().toList());
-            m_dataHasChanged = false;
-        }
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                if (!m_saving) {
+                    m_saving = true;
+                    XMLFileHandler xfh = new XMLFileHandler(Settings.GetInstance().getSaveFileLocation(), "data.xml");
+                    if (!xfh.success()) {
+                        m_dataHasChanged = true;
+                    } else {
+                        xfh.saveTransactions(m_transactions.sortByDatePaid().toList());
+                        m_dataHasChanged = false;
+                    }
+                    notifyObserversOfChange();
+                    m_saving = false;
+                }
+            }
+        };
+        Thread t = new Thread(r);
+        t.start();
+    }
+
+    /**
+     * Reload the data from the save file. This function will be called when the
+     * save file location is changed.
+     */
+    public void reloadData() {
+        loadData();
         notifyObserversOfChange();
     }
 

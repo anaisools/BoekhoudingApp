@@ -36,6 +36,7 @@ public class Settings {
         put(m_fields, "showHiddenValues", true);
         put(m_fields, "useDateAdded", false);
         put(m_fields, "hideExceptional", false);
+        put(m_fields, "saveFileLocation", System.getenv("APPDATA") + "\\GhostApps\\BoekhoudingApp\\");
 
         // load settings
         m_settings = new ArrayList();
@@ -181,6 +182,14 @@ public class Settings {
 
     public void setHideExceptional(boolean b) {
         put(m_settings, "hideExceptional", b);
+    }
+
+    public String getSaveFileLocation() {
+        return getString("saveFileLocation");
+    }
+
+    public void setSaveFileLocation(String s) {
+        put(m_settings, "saveFileLocation", s);
     }
 
     /**
