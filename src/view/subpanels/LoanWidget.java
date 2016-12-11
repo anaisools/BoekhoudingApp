@@ -9,6 +9,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import model.CategoryString;
+import model.Settings;
 import model.Transaction;
 import view.swingextensions.CustomGridBag;
 
@@ -166,10 +167,12 @@ public class LoanWidget extends JPanel {
         for (Transaction t : m_transactions) {
             // Create labels and button
             String description = (String) t.get(Transaction.TRANSACTIONFIELD.DESCRIPTION);
-            String price = model.Settings.GetInstance().convertPriceToString((double) t.get(Transaction.TRANSACTIONFIELD.PRICE));
             String date = df.format((Date) t.get(Transaction.TRANSACTIONFIELD.DATE_ADDED));
+            CategoryString transactor = (CategoryString) t.get(Transaction.TRANSACTIONFIELD.TRANSACTOR);
+            double price = correctPrice((double) t.get(Transaction.TRANSACTIONFIELD.PRICE), transactor);
+
             JLabel label_description = new JLabel(description);
-            JLabel label_price = new JLabel(price);
+            JLabel label_price = new JLabel(Settings.GetInstance().convertPriceToString(price));
             JLabel label_date = new JLabel(date);
             m_list.add(label_description);
             m_list.add(label_price);
@@ -206,10 +209,24 @@ public class LoanWidget extends JPanel {
     private void updateTotalPrice() {
         double price = 0;
         for (Transaction t : m_transactions) {
-            price += (double) t.get(Transaction.TRANSACTIONFIELD.PRICE);
+            CategoryString transactor = (CategoryString) t.get(Transaction.TRANSACTIONFIELD.TRANSACTOR);
+            price += correctPrice((double) t.get(Transaction.TRANSACTIONFIELD.PRICE), transactor);
         }
         m_price.setText(model.Settings.GetInstance().convertPriceToString(price));
         m_buttonRemoveAll.setVisible(price == 0);
+    }
+
+    private double correctPrice(double price, CategoryString transactor) {
+        if (transactor.equals(m_transactor)) { // paid to this person
+            if (price > 0) { // received from this person so substract from loan
+                price = -price;
+            } else if (price < 0) { // paid to this person, so substract from loan
+                // price = price; // nothing happens
+            }
+        } else { // paid to someone else
+            price = -price;
+        }
+        return price;
     }
 
     // Public functions --------------------------------------------------------

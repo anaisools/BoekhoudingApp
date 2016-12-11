@@ -217,6 +217,22 @@ public class Settings {
         return p;
     }
 
+    /**
+     * Converts a valuta representation of a number to the actual number.
+     *
+     * @param price the string to convert
+     * @return the value of the string
+     */
+    public double convertPriceToDouble(String price) {
+        price = price.replaceAll(",", ".");
+        price = price.replaceAll("[^\\d.-]", "");
+        try {
+            return Double.parseDouble(price);
+        } catch (NumberFormatException nfe) {
+            return 0;
+        }
+    }
+
     // Singleton ---------------------------------------------------------------
     private static Settings m_instance;
 

@@ -23,7 +23,6 @@ public class XMLFileHandler {
 
     private final String m_filename;
     private final String m_filesLocation;
-    // private final String m_devLocation;
     private final ArrayList<Pair<String, Object>> m_content;
     private final ArrayList<Transaction> m_transactions;
     private boolean m_fatalError;
