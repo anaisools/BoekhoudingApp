@@ -386,7 +386,7 @@ public class MainWindow extends JFrame {
      */
     private void exit(boolean save) {
         if (save || Settings.GetInstance().getSaveOnClose()) {
-            data.Data.GetInstance().saveData();
+            data.Data.GetInstance().saveDataSingleThreaded();
         }
         System.exit(0);
     }

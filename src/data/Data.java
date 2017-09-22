@@ -127,6 +127,21 @@ public class Data extends Observable implements Observer {
         t.start();
     }
 
+    public void saveDataSingleThreaded() {
+        if (!m_saving) {
+            m_saving = true;
+            XMLFileHandler xfh = new XMLFileHandler(Settings.GetInstance().getSaveFileLocation(), "data.xml");
+            if (!xfh.success()) {
+                m_dataHasChanged = true;
+            } else {
+                xfh.saveTransactions(m_transactions.sortByDatePaid().toList());
+                m_dataHasChanged = false;
+            }
+            notifyObserversOfChange();
+            m_saving = false;
+        }
+    }
+
     /**
      * Reload the data from the save file. This function will be called when the
      * save file location is changed.
