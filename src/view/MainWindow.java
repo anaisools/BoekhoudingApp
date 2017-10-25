@@ -209,6 +209,7 @@ public class MainWindow extends JFrame {
         JMenuItem item_autoSave = new JCheckBoxMenuItem("Autosave every change");
         JMenuItem item_saveOnClose = new JCheckBoxMenuItem("Save on exit");
         m_menuItem_hidePrices = new JCheckBoxMenuItem("Hide prices");
+        JMenuItem item_higherRows = new JCheckBoxMenuItem("Increase row height");
 
         item_save.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
         item_save.addActionListener(new DataTriggeredActionListener() {
@@ -259,6 +260,10 @@ public class MainWindow extends JFrame {
             Settings.GetInstance().setPricesVisible(!(ie.getStateChange() == ItemEvent.SELECTED));
             this.repaint();
         });
+        item_higherRows.addItemListener((ItemEvent ie) -> {
+            Settings.GetInstance().setHigherRows(ie.getStateChange() == ItemEvent.SELECTED);
+            this.repaint();
+        });
 
         m_menuBar.add(menu_file);
         menu_file.add(item_save);
@@ -274,11 +279,14 @@ public class MainWindow extends JFrame {
         menu_preferences.add(item_saveOnClose);
         menu_preferences.addSeparator();
         menu_preferences.add(m_menuItem_hidePrices);
+        menu_preferences.addSeparator();
+        menu_preferences.add(item_higherRows);
 
         item_maximizeWindow.setSelected(Settings.GetInstance().getMaximizeWindow());
         item_minimizeToTray.setSelected(Settings.GetInstance().getMinimizeToTray());
         item_autoSave.setSelected(Settings.GetInstance().getAutoSave());
         item_saveOnClose.setSelected(Settings.GetInstance().getSaveOnClose());
+        item_higherRows.setSelected(Settings.GetInstance().getHigherRows());
     }
 
     /**

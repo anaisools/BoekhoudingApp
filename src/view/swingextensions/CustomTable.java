@@ -89,7 +89,7 @@ public class CustomTable extends JPanel {
             }
         }
         //m_table.setFont(new Font("SansSerif", Font.PLAIN, 14));
-        m_table.setRowHeight(19);
+        //m_table.setRowHeight(19);
     }
 
     /**

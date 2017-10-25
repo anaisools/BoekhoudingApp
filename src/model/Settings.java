@@ -37,6 +37,7 @@ public class Settings {
         put(m_fields, "useDateAdded", false);
         put(m_fields, "hideExceptional", false);
         put(m_fields, "saveFileLocation", System.getenv("APPDATA") + "\\GhostApps\\BoekhoudingApp\\");
+        put(m_fields, "higherRows", false);
 
         // load settings
         m_settings = new ArrayList();
@@ -190,6 +191,14 @@ public class Settings {
 
     public void setSaveFileLocation(String s) {
         put(m_settings, "saveFileLocation", s);
+    }
+
+    public boolean getHigherRows() {
+        return getBoolean("higherRows");
+    }
+
+    public void setHigherRows(boolean b) {
+        put(m_settings, "higherRows", b);
     }
 
     /**
