@@ -1,5 +1,6 @@
 package view.subpanels;
 
+import view.swingextensions.CustomTable;
 import data.Data;
 import data.QueryableList;
 import java.awt.*;
@@ -14,7 +15,7 @@ import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
 import org.jfree.chart.plot.PiePlot;
 import org.jfree.data.general.*;
 import view.swingextensions.CustomGridBag;
-import view.subpanels.StatsTable.COLUMNTYPE;
+import view.swingextensions.CustomTable.COLUMNTYPE;
 
 /**
  * This panel displays a chart of the data. Parameters for the chart type,
@@ -61,10 +62,11 @@ public class ChartPanel extends JPanel implements Observer {
         columns.add(new Pair("+", COLUMNTYPE.PRICE));
         columns.add(new Pair("-", COLUMNTYPE.PRICE));
         columns.add(new Pair("Profit", COLUMNTYPE.PRICE));
-        StatsTable st = new StatsTable(columns);
+        CustomTable st = new CustomTable(columns);
         m_chartPanel = st;
         this.setLayout(new BorderLayout());
         this.add(st, BorderLayout.CENTER);
+        //this.add(new StatsControlPanel(), BorderLayout.EAST);
 
         // add data
         int currentYear = Calendar.getInstance().get(Calendar.YEAR);
@@ -138,6 +140,22 @@ public class ChartPanel extends JPanel implements Observer {
 
     }
 
+    private void lineChartLayout() {
+        System.out.println("Hello");
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+        HashMap<Integer, double[]> categoryData = Data.GetInstance().getTransactions().selectDateAddedByYear(currentYear).groupPriceByMonth();
+        Iterator it = categoryData.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<Integer, double[]> pair = (Map.Entry) it.next();
+            int month = pair.getKey();
+            double[] prices = pair.getValue();
+            System.out.print(month + ":\t");
+            System.out.print(Math.round(prices[0]) + "\t");
+            System.out.print(Math.round(prices[1]) + "\t");
+            System.out.println(Math.round(prices[0] + prices[1]));
+        }
+    }
+
     // Public functions --------------------------------------------------------
     /**
      * Set the parameters that the chart should display. Afterward, these
@@ -164,7 +182,15 @@ public class ChartPanel extends JPanel implements Observer {
         if (m_chartType == null || m_groupBy == null || m_time == null) {
             return;
         }
-        //pieChart();
-        tableLayout();
+        if (m_chartType == CHART_TYPE.TABLE && m_groupBy == GROUP_BY.CATEGORIES && m_time == TIME.THIS_YEAR) {
+            tableLayout();
+        } else if (m_chartType == CHART_TYPE.LINE_CHART) {
+            lineChartLayout();
+        } //        else if (m_chartType == CHART_TYPE.PIE_CHART) {
+        //            pieChartLayout();
+        //        } 
+        else {
+            tableLayout();
+        }
     }
 }

@@ -384,6 +384,27 @@ public class QueryableList extends Observable implements Observer, Iterable<Tran
         return result;
     }
 
+    public HashMap<Integer, double[]> groupPriceByMonth() {
+        HashMap<Integer, double[]> result = new HashMap();
+        Calendar cal = Calendar.getInstance();
+        for (Transaction t : this) {
+            cal.setTime((Date) t.get(TRANSACTIONFIELD.DATE_ADDED));
+            int month = cal.get(Calendar.MONTH);
+            double price = (double) t.get(TRANSACTIONFIELD.PRICE);
+            double[] monthArray = result.get(month);
+            if (monthArray == null) {
+                monthArray = new double[2];
+            }
+            if (price > 0) {
+                monthArray[0] += price;
+            } else if (price < 0) {
+                monthArray[1] += price;
+            }
+            result.put(month, monthArray);
+        }
+        return result;
+    }
+
     public QueryableList selectJobs() {
         QueryableList q = new QueryableList();
         for (Transaction t : this) {
