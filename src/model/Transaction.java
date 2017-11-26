@@ -27,6 +27,7 @@ public class Transaction extends Observable {
     // optional: payback
     private boolean m_payback;
     private CategoryString m_payBackTransactor;
+    private Double m_paybackPrice;
 
     // optional: job
     private boolean m_isJob;
@@ -37,7 +38,8 @@ public class Transaction extends Observable {
     public enum TRANSACTIONFIELD {
 
         DESCRIPTION, PRICE, CATEGORY, TRANSACTOR, DATE_ADDED, DATE_PAID,
-        PAYMENT_METHOD, EXCEPTIONAL, PAYBACK, PAYBACK_TRANSACTOR, JOB, JOB_HOURS,
+        PAYMENT_METHOD, EXCEPTIONAL, PAYBACK, PAYBACK_TRANSACTOR, PAYBACK_PRICE,
+        JOB, JOB_HOURS,
         JOB_WAGE, JOB_DATE, HIDDEN, HIDDEN_DATE
     };
 
@@ -107,6 +109,8 @@ public class Transaction extends Observable {
                 return m_payback;
             case PAYBACK_TRANSACTOR:
                 return m_payBackTransactor;
+            case PAYBACK_PRICE:
+                return m_paybackPrice;
             case JOB:
                 return m_isJob;
             case JOB_HOURS:
@@ -171,6 +175,9 @@ public class Transaction extends Observable {
             case PAYBACK_TRANSACTOR:
                 m_payBackTransactor = (CategoryString) value;
                 break;
+            case PAYBACK_PRICE:
+                m_paybackPrice = (Double) value;
+                break;
             case JOB:
                 if (value != null) {
                     m_isJob = (boolean) value;
@@ -213,6 +220,7 @@ public class Transaction extends Observable {
             case PRICE:
             case JOB_HOURS:
             case JOB_WAGE:
+            case PAYBACK_PRICE:
                 return Double.class;
             case TRANSACTOR:
             case PAYMENT_METHOD:
@@ -291,6 +299,7 @@ public class Transaction extends Observable {
         }
         if (!m_payback) {
             list.remove(TRANSACTIONFIELD.PAYBACK_TRANSACTOR);
+            list.remove(TRANSACTIONFIELD.PAYBACK_PRICE);
         }
         if (!m_isJob) {
             list.remove(TRANSACTIONFIELD.JOB_HOURS);

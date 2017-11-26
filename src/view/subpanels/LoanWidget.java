@@ -168,8 +168,7 @@ public class LoanWidget extends JPanel {
             // Create labels and button
             String description = (String) t.get(Transaction.TRANSACTIONFIELD.DESCRIPTION);
             String date = df.format((Date) t.get(Transaction.TRANSACTIONFIELD.DATE_ADDED));
-            CategoryString transactor = (CategoryString) t.get(Transaction.TRANSACTIONFIELD.TRANSACTOR);
-            double price = correctPrice((double) t.get(Transaction.TRANSACTIONFIELD.PRICE), transactor);
+            double price = getPrice(t);
 
             JLabel label_description = new JLabel(description);
             JLabel label_price = new JLabel(Settings.GetInstance().convertPriceToString(price));
@@ -210,23 +209,30 @@ public class LoanWidget extends JPanel {
         double price = 0;
         for (Transaction t : m_transactions) {
             CategoryString transactor = (CategoryString) t.get(Transaction.TRANSACTIONFIELD.TRANSACTOR);
-            price += correctPrice((double) t.get(Transaction.TRANSACTIONFIELD.PRICE), transactor);
+            price += getPrice(t);
         }
         m_price.setText(model.Settings.GetInstance().convertPriceToString(price));
         m_buttonRemoveAll.setVisible(price == 0);
     }
 
-    private double correctPrice(double price, CategoryString transactor) {
-        if (transactor.equals(m_transactor)) { // paid to this person
-            if (price > 0) { // received from this person so substract from loan
-                price = -price;
-            } else if (price < 0) { // paid to this person, so substract from loan
-                // price = price; // nothing happens
+    /**
+     * Get the price value from a transaction. This function can be used to
+     * correct the price that is returned, e.g. to return a positive value as
+     * price when the transaction price is negative.
+     *
+     * @param t The transaction to get the price from.
+     * @return The (possibly corrected) price to display.
+     */
+    private double getPrice(Transaction t) {
+        try {
+            double price = (double) t.get(Transaction.TRANSACTIONFIELD.PAYBACK_PRICE);
+            if (price == 0.0) {
+                price = (double) t.get(Transaction.TRANSACTIONFIELD.PRICE);
             }
-        } else { // paid to someone else
-            price = -price;
+            return price;
+        } catch (NullPointerException npe) {
+            return -(double) t.get(Transaction.TRANSACTIONFIELD.PRICE);
         }
-        return price;
     }
 
     // Public functions --------------------------------------------------------

@@ -125,6 +125,7 @@ public class AddEditTransaction extends JDialog {
 
         m_fieldsLoans = new ArrayList();
         m_fieldsLoans.add(new Pair(TRANSACTIONFIELD.PAYBACK_TRANSACTOR, new ValidationComboBox(false, "Loan transactor category > Loan transactor", " > ", transactors)));
+        m_fieldsLoans.add(new Pair(TRANSACTIONFIELD.PAYBACK_PRICE, new ValidationCurrencyField()));
 
         m_fieldsJob = new ArrayList();
         m_fieldsJob.add(new Pair(TRANSACTIONFIELD.JOB_DATE, new ValidationDateField(false, null, "Job date (dd/mm/yyyy)")));
@@ -139,7 +140,9 @@ public class AddEditTransaction extends JDialog {
      * Set layout-related preferences for the dialog.
      */
     private void setPreferences() {
-        int width = 600, height = 650;
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int width = (int) (screenSize.getWidth() * 0.3125);
+        int height = (int) (screenSize.getHeight() * 0.601852);
         this.setPreferredSize(new Dimension(width, height));
         this.setMinimumSize(this.getPreferredSize());
 
@@ -455,9 +458,8 @@ public class AddEditTransaction extends JDialog {
     /**
      * Show the dialog. This blocks the parent until the dialog is closed.
      */
-    @Override
-    public void show() {
-        super.show();
+    public void showDialog() {
+        super.setVisible(true);
     }
 
     /**

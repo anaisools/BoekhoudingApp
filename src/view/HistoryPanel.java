@@ -117,7 +117,7 @@ public class HistoryPanel extends JPanel implements Observer {
         });
         m_addButton.addActionListener((ActionEvent ae) -> {
             AddEditTransaction dialog = new AddEditTransaction(m_parentFrame);
-            dialog.show();
+            dialog.showDialog();
             if (dialog.isApproved() && dialog.getTransaction() != null) {
                 Data.GetInstance().getTransactions().add(dialog.getTransaction());
             }
@@ -126,7 +126,7 @@ public class HistoryPanel extends JPanel implements Observer {
             model.Transaction[] t = m_tablePanel.getSelectedTransactions();
             if (t != null && t.length > 0) {
                 AddEditTransaction dialog = new AddEditTransaction(m_parentFrame, t[0]);
-                dialog.show();
+                dialog.showDialog();
                 // on approving, the passed transaction will be changed and notify the views all by itself.
             }
         });
