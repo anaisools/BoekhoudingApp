@@ -130,7 +130,8 @@ public class AddEditTransaction extends JDialog {
         m_fieldsJob = new ArrayList();
         m_fieldsJob.add(new Pair(TRANSACTIONFIELD.JOB_DATE, new ValidationDateField(false, null, "Job date (dd/mm/yyyy)")));
         m_fieldsJob.add(new Pair(TRANSACTIONFIELD.JOB_HOURS, new ValidationNumberField(true, "Job hours", true)));
-        m_fieldsJob.add(new Pair(TRANSACTIONFIELD.JOB_WAGE, new ValidationNumberField(true, "Job wage (per hour)", true)));
+        //m_fieldsJob.add(new Pair(TRANSACTIONFIELD.JOB_WAGE, new ValidationNumberField(true, "Job wage (per hour)", true)));
+        m_fieldsJob.add(new Pair(TRANSACTIONFIELD.JOB_WAGE, new ValidationCurrencyField()));
 
         m_fieldsHidden = new ArrayList();
         m_fieldsHidden.add(new Pair(TRANSACTIONFIELD.HIDDEN_DATE, new ValidationDateField(true, null, "Keep transaction hidden until (dd/mm/yyyy) - can be empty")));
@@ -265,6 +266,14 @@ public class AddEditTransaction extends JDialog {
         Class preferredClass = m_transaction.getFieldClass(field);
         if (content != null && preferredClass.equals(CategoryString.class) && content.getClass().equals(String.class)) {
             content = new CategoryString((String) content);
+        }
+        if (field == TRANSACTIONFIELD.JOB_WAGE) {
+            Object hours = m_transaction.get(TRANSACTIONFIELD.JOB_HOURS);
+            if (hours != null && ((double) hours) > 0) {
+                content = ((double) content) / ((double) hours);
+            } else {
+                content = null;
+            }
         }
         m_transaction.set(field, content);
     }
