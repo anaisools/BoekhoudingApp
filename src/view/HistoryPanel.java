@@ -9,6 +9,7 @@ import java.util.*;
 import javafx.util.Pair;
 import javax.swing.*;
 import model.Settings;
+import model.Transaction;
 import model.Transaction.TRANSACTIONFIELD;
 import view.subpanels.*;
 import view.swingextensions.CustomGridBag;
@@ -41,6 +42,7 @@ public class HistoryPanel extends JPanel implements Observer {
     private JButton m_addButton;
     private JButton m_editButton;
     private JButton m_deleteButton;
+    private JButton m_copyButton;
 
     public HistoryPanel(JFrame parentFrame) {
         m_parentFrame = parentFrame;
@@ -91,6 +93,7 @@ public class HistoryPanel extends JPanel implements Observer {
         m_addButton = new JButton("Add");
         m_editButton = new JButton("Edit");
         m_deleteButton = new JButton("Delete");
+        m_copyButton = new JButton("Copy");
     }
 
     /**
@@ -103,6 +106,7 @@ public class HistoryPanel extends JPanel implements Observer {
         m_addButton.setBackground(Color.darkGray);
         m_editButton.setBackground(Color.darkGray);
         m_deleteButton.setBackground(Color.darkGray);
+        m_copyButton.setBackground(Color.darkGray);
     }
 
     /**
@@ -139,6 +143,16 @@ public class HistoryPanel extends JPanel implements Observer {
 
             }
         });
+        m_copyButton.addActionListener((ActionEvent ae) -> {
+            model.Transaction[] t = m_tablePanel.getSelectedTransactions();
+            if (t != null && t.length > 0) {
+                AddEditTransaction dialog = new AddEditTransaction(m_parentFrame, t[0].copy());
+                dialog.showDialog();
+                if (dialog.isApproved() && dialog.getTransaction() != null) {
+                    Data.GetInstance().getTransactions().add(dialog.getTransaction());
+                }
+            }
+        });
     }
 
     /**
@@ -158,6 +172,7 @@ public class HistoryPanel extends JPanel implements Observer {
         c.add(m_buttonPanel, m_addButton, 0, 0);
         c.add(m_buttonPanel, m_editButton, 1, 0);
         c.add(m_buttonPanel, m_deleteButton, 2, 0);
+        c.add(m_buttonPanel, m_copyButton, 3, 0);
 
         // General
         c.setCells(3, 1);

@@ -1,5 +1,6 @@
 package model;
 
+import data.Data;
 import java.util.*;
 
 /**
@@ -310,5 +311,20 @@ public class Transaction extends Observable {
             list.remove(TRANSACTIONFIELD.HIDDEN_DATE);
         }
         return list;
+    }
+
+    /**
+     * Generate a copy of the transaction with all fields identical but a new
+     * ID.
+     *
+     * @return a copy of the transaction.
+     */
+    public Transaction copy() {
+        long id = Data.GetInstance().getTransactions().getNewID();
+        Transaction t = new Transaction(id);
+        for (TRANSACTIONFIELD field : TRANSACTIONFIELD.values()) {
+            t.set(field, this.get(field));
+        }
+        return t;
     }
 }
