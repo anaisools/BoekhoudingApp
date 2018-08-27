@@ -306,6 +306,15 @@ public class AddEditTransaction extends JDialog {
             TRANSACTIONFIELD fieldtype = pair.getKey();
             ValidationComponent component = pair.getValue();
             Object value = m_transaction.get(fieldtype);
+            if (fieldtype == TRANSACTIONFIELD.JOB_WAGE) {
+                Object hours = m_transaction.get(TRANSACTIONFIELD.JOB_HOURS);
+                Object wage = m_transaction.get(TRANSACTIONFIELD.JOB_WAGE);
+                if (hours != null && wage != null) {
+                    value = ((double) wage) * ((double) hours);
+                } else {
+                    value = 0.0;
+                }
+            }
             if (value != null && value.getClass().equals(CategoryString.class)) {
                 value = ((CategoryString) value).toString();
             }
